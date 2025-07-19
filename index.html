@@ -117,7 +117,7 @@
                 <div class="bg-blue-600/90 p-6 rounded-lg text-white flex flex-col">
                     <h4 class="font-bold">Data Discovery</h4>
                     <p class="text-sm text-blue-100 mt-1 mb-3">Select Country →</p>
-                    <select id="country-select" class="w-full mt-auto p-2 border border-gray-600 rounded-md bg-gray-700 text-white"></select>
+                    <select id="country-select" class="w-full mt-auto p-2 border-none rounded-md bg-blue-900/70 text-white"></select>
                 </div>
 
                 <!-- Synthesize Data Card -->
@@ -149,7 +149,7 @@
                         <div>
                             <div class="flex justify-between items-center my-4 pt-6 border-t border-gray-800">
                                 <h4 class="text-lg font-semibold text-white">Historical Trends</h4>
-                                <select id="trend-indicator-select" class="p-1 border border-gray-600 rounded-md bg-gray-700 text-white text-sm"></select>
+                                <select id="trend-indicator-select" class="p-1 border-none rounded-md bg-gray-700 text-white text-sm"></select>
                             </div>
                             <div class="chart-container"><canvas id="historical-chart"></canvas></div>
                         </div>
@@ -273,7 +273,6 @@
             weights: { economicEngine: 0.5, techCapacity: 0.4, military_exp: 0.1 },
             table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
         },
-        // --- FIX: Rebalanced Hegemonic Position CPT ---
         hegemonicPosition: {
             table: {
                 Weak: {
