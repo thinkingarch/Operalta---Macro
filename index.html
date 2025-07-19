@@ -242,9 +242,9 @@
     const DISCRETIZATION_THRESHOLDS = {
         epi: [40, 60], nd_gain: [50, 65], co2: [15, 5, true], renewable: [20, 60],
         fertility: [1.5, 2.5], age_dependency: [60, 50, true],
-        gdp_pc: [20000, 55000], current_account: [-2, 2], manuf_vs_finance: [0.8, 1.5],
-        rd_exp: [1, 2.5], patents: [10000, 100000], internet_users: [60, 90],
-        gini: [0.45, 0.35, true], corruption_control: [25, 75], rule_of_law: [25, 75], political_stability: [25, 75],
+        gdp_pc: [15000, 60000], current_account: [-3, 3], manuf_vs_finance: [0.7, 2.0],
+        rd_exp: [1.5, 3.0], patents: [5000, 50000], internet_users: [60, 90],
+        gini: [0.45, 0.35, true], corruption_control: [40, 80], rule_of_law: [40, 80], political_stability: [40, 80],
         military_exp: [1, 3],
     };
 
@@ -282,11 +282,11 @@
             table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.1, Moderate: 0.6, Strong: 0.3 }, { Weak: 0.0, Moderate: 0.2, Strong: 0.8 } ]
         },
         socialCohesion: {
-            weights: { economicEngineType: 0.2, gini: 0.3, corruption_control: 0.2, rule_of_law: 0.15, political_stability: 0.15 },
+            weights: { economicEngineType: 0.3, gini: 0.3, corruption_control: 0.2, rule_of_law: 0.1, political_stability: 0.1 },
             table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
         },
         nationalResilience: {
-            weights: { socialCohesion: 0.4, economicEngineType: 0.3, biosphereIntegrity: 0.15, demographicDynamism: 0.15 },
+            weights: { socialCohesion: 0.4, economicEngineType: 0.35, biosphereIntegrity: 0.1, demographicDynamism: 0.15 },
             table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
         },
         relativePowerProjection: {
