@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operalta - Macro</title>
+    <title>Operalta - Macro (Bayesian)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -48,6 +48,25 @@
         ::-webkit-scrollbar-track { background: #111827; }
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        .cpt-table { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+        .cpt-table th, .cpt-table td { border: 1px solid #374151; padding: 6px 8px; text-align: left;}
+        .cpt-table th { background-color: #1f2937; }
+        .cpt-table input {
+            background-color: transparent;
+            color: #d1d5db;
+            width: 50px;
+            text-align: right;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+        .cpt-table input:focus {
+            outline: none;
+            border: 1px solid #3b82f6;
+            background-color: #111827;
+        }
+        .prob-bar-container { background-color: #374151; border-radius: 4px; overflow: hidden; display: flex; height: 1.25rem; }
+        .prob-bar { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; }
     </style>
 </head>
 <body class="flex">
@@ -58,7 +77,7 @@
             <svg class="h-8 w-8" viewBox="0 0 40 35" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M20 2.5C31.0457 2.5 39 10.2825 39 10.2825C39 10.2825 31.0457 18.065 20 18.065C8.9543 18.065 1 10.2825 1 10.2825C1 10.2825 8.9543 2.5 20 2.5Z" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M20 9.5C31.0457 9.5 39 17.2825 39 17.2825C39 17.2825 31.0457 25.065 20 25.065C8.9543 25.065 1 17.2825 1 17.2825C1 17.2825 8.9543 9.5 20 9.5Z" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M20 16.5C31.0457 16.5 39 24.2825 39 24.2825C39 24.2825 31.0457 32.065 20 32.065C8.9543 32.065 1 24.2825 1 24.2825C1 24.2825 8.9543 16.5 20 16.5Z" stroke="#db2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20 16.5C31.0457 16.5 39 24.2825 39 24.2825C39 17.2825 31.0457 32.065 20 32.065C8.9543 32.065 1 24.2825 1 24.2825C1 17.2825 8.9543 16.5 20 16.5Z" stroke="#db2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <h1 class="text-2xl font-bold text-white">Operalta - Macro</h1>
         </div>
@@ -67,8 +86,8 @@
             <span class="font-medium">Dashboard</span>
         </a>
         <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800/50 text-gray-400" data-view="model">
-             <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12A2.25 2.25 0 0 0 20.25 14.25V5.25A2.25 2.25 0 0 0 18 3H6.75A2.25 2.25 0 0 0 4.5 5.25v.75m-1.5 0V5.25c0-1.518 1.232-2.75 2.75-2.75H18A2.25 2.25 0 0 1 20.25 5.25v9A2.25 2.25 0 0 1 18 16.5h-3.375m-12.75 0H3.75m9 0h3.375M3.75 21h16.5M12 3v18" /></svg>
-            <span class="font-medium">Dynamic Modeling</span>
+             <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 1 0 7.5 7.5h-7.5V6Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0 0 13.5 3v7.5Z" /></svg>
+            <span class="font-medium">Bayesian Model</span>
         </a>
         <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800/50 text-gray-400" data-view="sources">
             <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
@@ -86,14 +105,34 @@
                 <p class="text-gray-400">Welcome to Operalta. Here's a quick overview of macro insights.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-                <!-- Stat Cards -->
-                <div class="bg-gray-900 p-6 rounded-lg border border-gray-800"><h4 class="text-gray-400 text-sm font-medium">Data Sources Active</h4><p id="data-sources-active" class="text-3xl font-semibold text-white mt-2">0</p></div>
-                <div class="bg-gray-900 p-6 rounded-lg border border-gray-800"><h4 class="text-gray-400 text-sm font-medium">Models Active</h4><p class="text-3xl font-semibold text-white mt-2">1</p></div>
-                <!-- Action Cards -->
-                <div class="bg-blue-600/90 p-6 rounded-lg text-white col-span-1 md:col-span-2 lg:col-span-1"><h4 class="font-bold">Data Discovery</h4><p class="text-sm text-blue-100 mt-1 mb-3">Find and ingest new data sources.</p><select id="country-select" class="w-full mt-1 p-2 border border-blue-400 rounded-md bg-blue-500/50 text-white focus:ring-blue-500 focus:border-blue-500"></select></div>
-                <div class="bg-orange-500/90 p-6 rounded-lg text-white"><h4 class="font-bold">Synthesize Data</h4><p class="text-sm text-orange-100 mt-1 mb-3">Generate new data from existing sources.</p><button id="analyze-btn" class="w-full bg-white/20 text-white font-semibold py-2 px-4 rounded-md hover:bg-white/30 transition">Start Synthesizing &rarr;</button></div>
-                <div class="bg-pink-600/90 p-6 rounded-lg text-white"><h4 class="font-bold">Dynamic Modeling</h4><p class="text-sm text-pink-100 mt-1 mb-3">Translate models to live spreadsheets.</p><button id="explore-model-btn" class="w-full bg-white/20 text-white font-semibold py-2 px-4 rounded-md hover:bg-white/30 transition">Explore Models &rarr;</button></div>
+            <!-- ACTION CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Stat Card -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 flex flex-col">
+                    <h4 class="text-gray-400 text-sm font-medium">Data Sources Active</h4>
+                    <p id="data-sources-active" class="text-3xl font-semibold text-white mt-2">0</p>
+                </div>
+
+                <!-- Data Discovery Card -->
+                <div class="bg-blue-600/90 p-6 rounded-lg text-white flex flex-col">
+                    <h4 class="font-bold">Data Discovery</h4>
+                    <p class="text-sm text-blue-100 mt-1 mb-3">Select Country →</p>
+                    <select id="country-select" class="w-full mt-auto p-2 border border-gray-600 rounded-md bg-gray-700 text-white"></select>
+                </div>
+
+                <!-- Synthesize Data Card -->
+                <div class="bg-orange-500/90 p-6 rounded-lg text-white flex flex-col">
+                    <h4 class="font-bold">Synthesize Data</h4>
+                    <p class="text-sm text-orange-100 mt-1 mb-3">Run the analysis for the selected country →</p>
+                    <button id="analyze-btn" class="w-full mt-auto bg-white/20 text-white font-semibold py-2 px-4 rounded-md hover:bg-white/30 transition">Run Analysis</button>
+                </div>
+
+                <!-- Dynamic Modeling Card -->
+                <div class="bg-pink-600/90 p-6 rounded-lg text-white flex flex-col">
+                    <h4 class="font-bold">Dynamic Modeling</h4>
+                    <p class="text-sm text-pink-100 mt-1 mb-3">Explore Bayesian Models →</p>
+                    <button id="explore-model-btn" class="w-full mt-auto bg-white/20 text-white font-semibold py-2 px-4 rounded-md hover:bg-white/30 transition">Explore Models</button>
+                </div>
             </div>
             
             <div id="loader" class="loader hidden mx-auto my-16"></div>
@@ -103,15 +142,14 @@
                     <div class="lg:col-span-2 bg-gray-900 p-6 rounded-lg border border-gray-800">
                         <h3 class="text-xl font-semibold text-white mb-4">Cycle Analysis and Trends</h3>
                         <div class="mb-8">
-                            <h4 class="text-lg font-semibold mb-2 text-white">Hegemonic Cycle Position: <span id="hegemonic-position" class="ml-2 font-bold text-2xl text-blue-400"></span></h4>
-                            <div class="w-full bg-gray-700 rounded-full h-2.5 mt-4"><div id="hegemonic-progress" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div></div>
-                            <div class="flex justify-between text-xs text-gray-400 mt-1"><span>Rise</span><span>Consolidation</span><span>Decline</span><span>Transition</span></div>
+                            <h4 class="text-lg font-semibold mb-2 text-white">Hegemonic Cycle Position</h4>
+                            <div id="hegemonic-distribution" class="mt-2"></div>
                         </div>
                         <div id="cycle-explanation-scenarios" class="mt-6 text-sm text-gray-400 space-y-4"></div>
                         <div>
                             <div class="flex justify-between items-center my-4 pt-6 border-t border-gray-800">
                                 <h4 class="text-lg font-semibold text-white">Historical Trends</h4>
-                                <select id="trend-indicator-select" class="p-1 border border-gray-600 rounded-md bg-gray-700 text-white text-sm focus:ring-blue-500 focus:border-blue-500"></select>
+                                <select id="trend-indicator-select" class="p-1 border border-gray-600 rounded-md bg-gray-700 text-white text-sm"></select>
                             </div>
                             <div class="chart-container"><canvas id="historical-chart"></canvas></div>
                         </div>
@@ -119,7 +157,7 @@
                     <div class="bg-gray-900 p-6 rounded-lg border border-gray-800">
                          <h3 class="text-xl font-semibold text-white mb-4">Core Diagnostics</h3>
                          <div id="core-diagnostics-container" class="space-y-6">
-                            <!-- Diagnostics will be inserted here -->
+                             <!-- Diagnostics will be inserted here -->
                          </div>
                     </div>
                 </div>
@@ -129,13 +167,14 @@
         <!-- View: Model Explorer -->
         <div id="view-model" class="view-content">
             <div class="bg-gray-900 border border-gray-800 p-6 rounded-lg">
-                <h2 class="text-xl font-semibold mb-4 text-white">Bayesian Model Explorer</h2>
-                <p class="text-gray-400 mb-6">Adjust the weights of individual indicators to see how they influence the overall analysis. Weights are automatically normalized for each component.</p>
-                <div id="model-explorer-content" class="space-y-6"></div>
-                <div class="mt-8 pt-6 border-t border-gray-800">
-                    <h3 class="text-xl font-semibold text-white mb-4">Model Visualization</h3>
-                    <div id="model-graph-container" class="bg-gray-900/50 p-4 rounded-lg"></div>
-                </div>
+                <h2 class="text-2xl font-semibold mb-2 text-white">Bayesian Network Structure</h2>
+                <p class="text-gray-400 mb-6">This model represents macroeconomic factors as a network of probabilities. Each node's state (e.g., 'Strong', 'Weak') is determined by the probabilistic states of its parent nodes, based on Conditional Probability Tables (CPTs).</p>
+                
+                <div id="model-graph-container" class="bg-gray-900/50 p-4 rounded-lg mb-8 overflow-x-auto"></div>
+                
+                <h3 class="text-xl font-semibold text-white mb-4">Conditional Probability Tables (CPTs)</h3>
+                <p class="text-gray-400 mb-6 text-sm">You can directly edit the probabilities below. Values in a row are automatically normalized to sum to 100%. The analysis will re-run on every change.</p>
+                <div id="model-cpt-content" class="space-y-8"></div>
             </div>
         </div>
 
@@ -152,40 +191,12 @@
     <script type="module">
     // --- App State & Config ---
     let historicalChart;
-    
     const COUNTRIES = { 'USA': 'United States', 'CHN': 'China', 'DEU': 'Germany', 'JPN': 'Japan', 'IND': 'India', 'RUS': 'Russia', 'BRA': 'Brazil', 'GBR': 'United Kingdom', 'FRA': 'France', 'ITA': 'Italy', 'CAN': 'Canada', 'AUS': 'Australia', 'KOR': 'South Korea', 'MEX': 'Mexico', 'IDN': 'Indonesia', 'SAU': 'Saudi Arabia', 'TUR': 'Turkey', 'ARG': 'Argentina', 'ZAF': 'South Africa', 'NGA': 'Nigeria' };
-    
-    const INDICATORS = { 
-        WB_GDP_PC: 'NY.GDP.PCAP.CD', WB_GDP_GROWTH: 'NY.GDP.MKTP.KD.ZG', WB_MANUF_VA: 'NV.IND.MANF.ZS', 
-        WB_GINI: 'SI.POV.GINI', WB_UNEMPLOYMENT: 'SL.UEM.TOTL.NE.ZS',
-        WB_MILITARY_EXP: 'MS.MIL.XPND.GD.ZS', WB_RD_EXP: 'GB.XPD.RSDV.GD.ZS', WB_PATENTS: 'IP.PAT.RESD',
-        WB_POLITICAL_STABILITY: 'PV.PER.RNK', WB_RULE_OF_LAW: 'RL.PER.RNK', WB_CORRUPTION_CONTROL: 'CC.PER.RNK',
-        IMF_DEBT: 'GGXWDG_NGDP',
-        WB_FERTILITY_RATE: 'SP.DYN.TFRT.IN', WB_AGE_DEPENDENCY_OLD: 'SP.POP.DPND.OL', WB_AGE_DEPENDENCY_YOUTH: 'SP.POP.DPND.YG',
-        WB_AGRI_LAND: 'AG.LND.AGRI.ZS', WB_CEREAL_YIELD: 'AG.YLD.CREL.KG',
-        WB_CO2_EMISSIONS: 'EN.ATM.CO2E.PC', WB_RENEWABLE_ENERGY: 'EG.ELC.RNWX.ZS'
-    };
-
     const TREND_INDICATORS = { 'GDP Growth (%)': { source: 'WB', code: 'NY.GDP.MKTP.KD.ZG' }, 'Military Spending (% GDP)': { source: 'WB', code: 'MS.MIL.XPND.GD.ZS' }, 'Unemployment (%)': { source: 'WB', code: 'SL.UEM.TOTL.NE.ZS' }, 'Government Debt (% GDP)': { source: 'IMF', code: 'GGXWDG_NGDP' }, 'Political Stability': {source: 'WB', code: 'PV.PER.RNK'}};
-    
     const STATIC_DATA = {
         EPI: { 'USA': 51.1, 'CHN': 28.4, 'DEU': 77.2, 'JPN': 75.1, 'IND': 18.9, 'RUS': 37.5, 'BRA': 43.6, 'GBR': 81.3, 'FRA': 80.0, 'ITA': 78.8, 'CAN': 71.8, 'AUS': 74.9, 'KOR': 62.1, 'MEX': 45.5, 'IDN': 28.2, 'SAU': 37.9, 'TUR': 46.8, 'ARG': 41.1, 'ZAF': 36.6, 'NGA': 28.3 },
         ND_GAIN: { 'USA': 69.8, 'CHN': 60.3, 'DEU': 72.5, 'JPN': 71.2, 'IND': 48.9, 'RUS': 62.5, 'BRA': 56.9, 'GBR': 73.1, 'FRA': 73.8, 'ITA': 68.4, 'CAN': 71.6, 'AUS': 74.5, 'KOR': 69.1, 'MEX': 58.1, 'IDN': 51.3, 'SAU': 59.8, 'TUR': 59.5, 'ARG': 57.7, 'ZAF': 53.9, 'NGA': 35.6 }
     };
-
-    let modelWeights = {
-        // Level 2
-        biosphereIntegrity: { epi_score: 25, nd_gain_score: 25, co2_score: 25, renewable_score: 25 },
-        demographicDynamism: { fertility_score: 40, age_dependency_score: 60 },
-        // Level 3
-        economicEngine: { gdp_pc_score: 35, gdp_growth_score: 30, manuf_va_score: 20, debt_score: 15 },
-        socialCohesion: { gini_score: 60, unemployment_score: 40, political_stability_score: 20 },
-        techCapacity: { rd_exp_score: 70, patents_score: 30 },
-        // Level 4
-        nationalResilience: { socialCohesion: 30, demographicDynamism: 25, biosphereIntegrity: 25, foodSecurity: 20 },
-        powerProjection: { economicEngine: 40, techCapacity: 40, military_exp_score: 20 }
-    };
-
     let dataSources = {
         worldBank: { name: 'World Bank', enabled: true, apiKey: '', type: 'public' },
         imf: { name: 'International Monetary Fund', enabled: true, apiKey: '', type: 'public' },
@@ -193,10 +204,96 @@
         epi: { name: 'Yale EPI (2022)', enabled: true, apiKey: '', type: 'static' },
         ndGain: { name: 'ND-GAIN (2021)', enabled: true, apiKey: '', type: 'static' },
     };
-
     const OECD_COUNTRIES = ['AUS', 'CAN', 'DEU', 'FRA', 'GBR', 'ITA', 'JPN', 'KOR', 'MEX', 'TUR', 'USA'];
-
     let countrySelect, analyzeBtn, loader, dashboardContentWrapper, trendIndicatorSelect, exploreModelBtn;
+
+    // --- Bayesian Network Definition ---
+    const STATES = { Weak: 0, Moderate: 1, Strong: 2 };
+    const REVERSE_STATES = ['Weak', 'Moderate', 'Strong'];
+    const CYCLE_STATES = { Rise: 0, Consolidation: 1, Decline: 2, Transition: 3 };
+    const REVERSE_CYCLE_STATES = ['Rise', 'Consolidation', 'Decline', 'Transition'];
+
+    const LEAF_NODES = {
+        gdp_pc: 'GDP/Cap', gdp_growth: 'GDP Growth', manuf_va: 'Manuf. VA', debt: 'Gov. Debt',
+        gini: 'Inequality', unemployment: 'Unemployment', political_stability: 'P. Stability',
+        rd_exp: 'R&D Exp.', patents: 'Patents',
+        epi: 'EPI', nd_gain: 'ND-GAIN', co2: 'CO2', renewable: 'Renewable',
+        fertility: 'Fertility', age_dependency: 'Age Depend.', military_exp: 'Military Exp.'
+    };
+
+    // 1. Discretization thresholds for raw indicators
+    const DISCRETIZATION_THRESHOLDS = {
+        gdp_pc: [20000, 55000], gdp_growth: [1, 4], manuf_va: [10, 20],
+        gini: [0.45, 0.35, true], unemployment: [7, 4, true], debt: [100, 60, true],
+        military_exp: [1, 3], rd_exp: [1, 2.5], patents: [10000, 100000],
+        political_stability: [25, 75], rule_of_law: [25, 75], corruption_control: [25, 75],
+        epi: [40, 60], nd_gain: [50, 65], fertility: [1.5, 2.5],
+        age_dependency: [60, 50, true], co2: [15, 5, true], renewable: [20, 60]
+    };
+
+    // 2. Network Structure (Parents for each node)
+    const NETWORK_STRUCTURE = {
+        economicEngine: ['gdp_pc', 'gdp_growth', 'manuf_va', 'debt'],
+        socialCohesion: ['gini', 'unemployment', 'political_stability'],
+        techCapacity: ['rd_exp', 'patents'],
+        biosphereIntegrity: ['epi', 'nd_gain', 'co2', 'renewable'],
+        demographicDynamism: ['fertility', 'age_dependency'],
+        nationalResilience: ['socialCohesion', 'demographicDynamism', 'biosphereIntegrity'],
+        powerProjection: ['economicEngine', 'techCapacity', 'military_exp'],
+        hegemonicPosition: ['powerProjection', 'nationalResilience']
+    };
+
+    // 3. Conditional Probability Tables (CPTs)
+    let CPTs = {
+        economicEngine: {
+            weights: { gdp_pc: 0.4, gdp_growth: 0.3, manuf_va: 0.15, debt: 0.15 },
+            table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
+        },
+        socialCohesion: {
+            weights: { gini: 0.5, unemployment: 0.3, political_stability: 0.2 },
+            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
+        },
+        techCapacity: {
+            weights: { rd_exp: 0.6, patents: 0.4 },
+            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.1, Moderate: 0.6, Strong: 0.3 }, { Weak: 0.0, Moderate: 0.2, Strong: 0.8 } ]
+        },
+        biosphereIntegrity: {
+            weights: { epi: 0.3, nd_gain: 0.3, co2: 0.2, renewable: 0.2 },
+            table: [ { Weak: 0.6, Moderate: 0.3, Strong: 0.1 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.1, Moderate: 0.3, Strong: 0.6 } ]
+        },
+        demographicDynamism: {
+            weights: { fertility: 0.5, age_dependency: 0.5 },
+            table: [ { Weak: 0.6, Moderate: 0.3, Strong: 0.1 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.1, Moderate: 0.3, Strong: 0.6 } ]
+        },
+        nationalResilience: {
+            weights: { socialCohesion: 0.5, demographicDynamism: 0.25, biosphereIntegrity: 0.25 },
+            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
+        },
+        powerProjection: {
+            weights: { economicEngine: 0.5, techCapacity: 0.4, military_exp: 0.1 },
+            table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
+        },
+        // --- FIX: Rebalanced Hegemonic Position CPT ---
+        hegemonicPosition: {
+            table: {
+                Weak: {
+                    Weak:       { Rise: 0.05, Consolidation: 0.0,  Decline: 0.7, Transition: 0.25 },
+                    Moderate:   { Rise: 0.1,  Consolidation: 0.0,  Decline: 0.6, Transition: 0.3  },
+                    Strong:     { Rise: 0.2,  Consolidation: 0.05, Decline: 0.4, Transition: 0.35 }
+                },
+                Moderate: {
+                    Weak:       { Rise: 0.2,  Consolidation: 0.05, Decline: 0.4, Transition: 0.35 },
+                    Moderate:   { Rise: 0.4,  Consolidation: 0.2,  Decline: 0.2, Transition: 0.2  },
+                    Strong:     { Rise: 0.6,  Consolidation: 0.3,  Decline: 0.05,Transition: 0.05 }
+                },
+                Strong: {
+                    Weak:       { Rise: 0.1,  Consolidation: 0.2,  Decline: 0.4, Transition: 0.3  },
+                    Moderate:   { Rise: 0.1,  Consolidation: 0.7,  Decline: 0.1, Transition: 0.1  },
+                    Strong:     { Rise: 0.05, Consolidation: 0.85, Decline: 0.05,Transition: 0.05 }
+                }
+            }
+        }
+    };
 
     function initialize() {
         countrySelect = document.getElementById('country-select');
@@ -219,11 +316,11 @@
 
         analyzeBtn.addEventListener('click', runAnalysis);
         exploreModelBtn.addEventListener('click', () => switchView('model'));
+        countrySelect.addEventListener('change', runAnalysis);
         trendIndicatorSelect.addEventListener('change', runAnalysis);
         
         buildModelExplorer();
         buildDataSourcesManager();
-        buildModelGraph();
         runAnalysis();
     }
 
@@ -247,59 +344,57 @@
         document.querySelector(`.nav-link[data-view="${viewId}"]`).classList.add('bg-gray-800', 'text-white');
     }
 
+    // --- Data Fetching (Largely unchanged) ---
     async function fetchData(countryCode) {
+        const wbIndicators = 'NY.GDP.PCAP.CD;NY.GDP.MKTP.KD.ZG;NV.IND.MANF.ZS;SI.POV.GINI;SL.UEM.TOTL.NE.ZS;MS.MIL.XPND.GD.ZS;GB.XPD.RSDV.GD.ZS;IP.PAT.RESD;PV.PER.RNK;RL.PER.RNK;CC.PER.RNK;SP.DYN.TFRT.IN;SP.POP.DPND.OL;SP.POP.DPND.YG;EN.ATM.CO2E.PC;EG.ELC.RNWX.ZS';
         const promises = [
-            dataSources.worldBank.enabled ? fetchWorldBankData(countryCode) : Promise.resolve({}),
-            dataSources.imf.enabled ? fetchImfData(countryCode) : Promise.resolve({}),
+            dataSources.worldBank.enabled ? fetchWorldBankData(countryCode, wbIndicators) : Promise.resolve({}),
+            dataSources.imf.enabled ? fetchImfData(countryCode, 'GGXWDG_NGDP') : Promise.resolve({}),
             dataSources.oecd.enabled && OECD_COUNTRIES.includes(countryCode) ? fetchOecdGini(countryCode) : Promise.resolve(null)
         ];
         
         const [wbData, imfData, oecdGini] = await Promise.all(promises);
-        
         const combinedData = { ...wbData, ...imfData };
-
-        if (oecdGini && (!combinedData.WB_GINI || (combinedData.WB_GINI.date && oecdGini.date > combinedData.WB_GINI.date))) {
-            combinedData.WB_GINI = oecdGini;
+        if (oecdGini && (!combinedData.SI_POV_GINI || (combinedData.SI_POV_GINI.date && oecdGini.date > combinedData.SI_POV_GINI.date))) {
+            combinedData.SI_POV_GINI = oecdGini;
         }
-
         combinedData.EPI = { value: STATIC_DATA.EPI[countryCode] || null };
         combinedData.ND_GAIN = { value: STATIC_DATA.ND_GAIN[countryCode] || null };
-        
         return combinedData;
     }
 
-    async function fetchWorldBankData(countryCode, indicator = null, dateRange = '2013:2023') {
-        const indicatorsToFetch = indicator ? [indicator] : Object.values(INDICATORS).filter(id => !id.startsWith('GGX'));
-        const url = `https://api.worldbank.org/v2/country/${countryCode}/indicator/${indicatorsToFetch.join(';')}?date=${dateRange}&format=json&per_page=1000`;
+    async function fetchWorldBankData(countryCode, indicators, dateRange = '2015:2023', forChart = false) {
+        const url = `https://api.worldbank.org/v2/country/${countryCode}/indicator/${indicators}?date=${dateRange}&format=json&per_page=1000`;
         try {
             const res = await fetch(url);
-            if (!res.ok) { console.error(`WB API Error: ${res.status}`); return indicator ? [] : {}; }
+            if (!res.ok) { console.error(`WB API Error: ${res.status}`); return forChart ? [] : {}; }
             const raw = await res.json();
-            if (!raw || !raw[1]) { console.warn(`No WB data for ${countryCode}`); return indicator ? [] : {}; }
-            if (indicator) return raw[1].map(d => ({ year: d.date, value: d.value })).filter(d => d.value !== null).sort((a, b) => a.year - b.year);
+            if (!raw || !raw[1]) { console.warn(`No WB data for ${countryCode}`); return forChart ? [] : {}; }
+            if (forChart) return raw[1].map(d => ({ year: d.date, value: d.value })).filter(d => d.value !== null).sort((a, b) => a.year - b.year);
             const data = {};
-            Object.keys(INDICATORS).filter(k => k.startsWith('WB_')).forEach(key => {
-                const recentData = raw[1].find(d => d.indicator.id === INDICATORS[key] && d.value !== null);
-                data[key] = recentData ? { value: recentData.value, date: recentData.date } : { value: null, date: 'N/A' };
+            raw[1].forEach(d => {
+                const key = d.indicator.id.replaceAll('.', '_');
+                if (d.value !== null && (!data[key] || d.date > data[key].date)) {
+                   data[key] = { value: d.value, date: d.date };
+                }
             });
             return data;
-        } catch (error) { console.error(`Fetch Error (WB):`, error); return indicator ? [] : {}; }
+        } catch (error) { console.error(`Fetch Error (WB):`, error); return forChart ? [] : {}; }
     }
 
-    async function fetchImfData(countryCode, indicator = null) {
-        const indicatorId = indicator || INDICATORS.IMF_DEBT;
-        const targetUrl = `https://www.imf.org/external/datamapper/api/v1/${indicatorId}/${countryCode}`;
+    async function fetchImfData(countryCode, indicator, forChart = false) {
+        const targetUrl = `https://www.imf.org/external/datamapper/api/v1/${indicator}/${countryCode}`;
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
         try {
             const res = await fetch(proxyUrl);
-            if (!res.ok) { console.error(`CORS Proxy Error (IMF): ${res.status}`); return indicator ? [] : {}; }
+            if (!res.ok) { console.error(`CORS Proxy Error (IMF): ${res.status}`); return forChart ? [] : {}; }
             const raw = await res.json();
-            const values = raw.values?.[indicatorId]?.[countryCode];
-            if (!values) { console.warn(`No IMF data for ${indicatorId}/${countryCode}`); return indicator ? [] : {}; }
-            if (indicator) return Object.entries(values).map(([year, value]) => ({ year, value })).sort((a, b) => a.year - b.year);
+            const values = raw.values?.[indicator]?.[countryCode];
+            if (!values) { console.warn(`No IMF data for ${indicator}/${countryCode}`); return forChart ? [] : {}; }
+            if (forChart) return Object.entries(values).map(([year, value]) => ({ year, value })).sort((a, b) => a.year - b.year);
             const latestYear = Object.keys(values).filter(y => parseInt(y) <= new Date().getFullYear()).pop();
-            return { IMF_DEBT: { value: values[latestYear], date: latestYear } };
-        } catch (error) { console.error(`Fetch Error (IMF):`, error); return indicator ? [] : {}; }
+            return { [indicator.replaceAll('.', '_')]: { value: values[latestYear], date: latestYear } };
+        } catch (error) { console.error(`Fetch Error (IMF):`, error); return forChart ? [] : {}; }
     }
     
     async function fetchOecdGini(countryCode) {
@@ -307,104 +402,98 @@
         const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
         try {
             const res = await fetch(proxyUrl);
-            if (!res.ok) { console.error(`OECD Proxy Error: ${res.status}`); return null; }
+            if (!res.ok) return null;
             const raw = await res.json();
-            
             if (!raw || !raw.dataSets || !raw.dataSets[0] || !raw.dataSets[0].series) {
                 console.warn(`OECD GINI data structure not as expected for ${countryCode}.`);
                 return null;
             }
-
             const series = raw.dataSets[0].series['0:0:0:0'];
             if (!series || !series.observations) {
-                 console.warn(`No OECD GINI observations found for ${countryCode}.`);
-                 return null;
+                console.warn(`No OECD GINI observations found for ${countryCode}.`);
+                return null;
             }
             const obsKeys = Object.keys(series.observations);
             if (obsKeys.length === 0) {
-                console.warn(`OECD GINI observation object is empty for ${countryCode}.`);
+                 console.warn(`OECD GINI observation object is empty for ${countryCode}.`);
                 return null;
             }
-
             const latestObsKey = obsKeys[obsKeys.length - 1];
             const latestObs = series.observations[latestObsKey];
             const year = raw.structure.dimensions.observation[4].values[latestObsKey].name;
-            const value = latestObs[0];
-            return { value, date: year };
+            return { value: latestObs[0], date: year };
         } catch (error) { console.error(`Fetch Error (OECD):`, error); return null; }
     }
 
-    function processData(data) {
-        const normalize = (value, min, max, invert = false) => {
-            if (value === null || value === undefined) return null; // Return null if data is missing
-            const normalized = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-            return invert ? 100 - normalized : normalized;
-        };
-        const ageDependency = (data.WB_AGE_DEPENDENCY_OLD?.value || 0) + (data.WB_AGE_DEPENDENCY_YOUTH?.value || 0);
-
-        return {
-            gdp_pc_score: normalize(data.WB_GDP_PC?.value, 1000, 80000),
-            gdp_growth_score: normalize(data.WB_GDP_GROWTH?.value, -2, 8),
-            manuf_va_score: normalize(data.WB_MANUF_VA?.value, 5, 30),
-            gini_score: normalize(data.WB_GINI?.value, 0.2, 0.65, true),
-            unemployment_score: normalize(data.WB_UNEMPLOYMENT?.value, 2, 15, true),
-            debt_score: normalize(data.IMF_DEBT?.value, 30, 150, true),
-            military_exp_score: normalize(data.WB_MILITARY_EXP?.value, 0.5, 5),
-            rd_exp_score: normalize(data.WB_RD_EXP?.value, 0.5, 4),
-            patents_score: normalize(data.WB_PATENTS?.value, 100, 1000000),
-            stability_score: normalize(data.WB_POLITICAL_STABILITY?.value, 0, 100),
-            rule_of_law_score: normalize(data.WB_RULE_OF_LAW?.value, 0, 100),
-            corruption_control_score: normalize(data.WB_CORRUPTION_CONTROL?.value, 0, 100),
-            epi_score: normalize(data.EPI?.value, 15, 85),
-            nd_gain_score: normalize(data.ND_GAIN?.value, 30, 75),
-            fertility_score: normalize(data.WB_FERTILITY_RATE?.value, 1, 5),
-            age_dependency_score: normalize(ageDependency, 40, 100, true),
-            agri_land_score: normalize(data.WB_AGRI_LAND?.value, 10, 80, true),
-            cereal_yield_score: normalize(data.WB_CEREAL_YIELD?.value, 1000, 10000),
-            co2_score: normalize(data.WB_CO2_EMISSIONS?.value, 0, 20, true),
-            renewable_score: normalize(data.WB_RENEWABLE_ENERGY?.value, 0, 100),
-            raw: data
-        };
+    // --- Bayesian Network Logic ---
+    function discretize(value, thresholds) {
+        if (value === null || value === undefined) return null;
+        const [t1, t2, invert] = thresholds;
+        if (invert) {
+            if (value <= t2) return STATES.Strong;
+            if (value <= t1) return STATES.Moderate;
+            return STATES.Weak;
+        } else {
+            if (value >= t2) return STATES.Strong;
+            if (value >= t1) return STATES.Moderate;
+            return STATES.Weak;
+        }
     }
 
-    function runBayesianModel(p_data) {
-        const getWeightedSum = (component, data) => {
-            const weights = modelWeights[component];
-            let totalWeight = 0, weightedSum = 0;
-            for (const key in weights) {
-                const score = data[key] === null ? 50 : data[key]; // Use neutral 50 if data is null
-                totalWeight += weights[key];
-                weightedSum += (score || 0) * weights[key];
-            }
-            return totalWeight > 0 ? weightedSum / totalWeight : 0;
-        }
+    function runBayesianInference(rawData) {
+        const nodeStates = {};
+
+        // 1. Discretize leaf nodes (raw indicators)
+        const ageDependency = (rawData.SP_POP_DPND_OL?.value || 0) + (rawData.SP_POP_DPND_YG?.value || 0);
+        nodeStates.gdp_pc = discretize(rawData.NY_GDP_PCAP_CD?.value, DISCRETIZATION_THRESHOLDS.gdp_pc);
+        nodeStates.gdp_growth = discretize(rawData.NY_GDP_MKTP_KD_ZG?.value, DISCRETIZATION_THRESHOLDS.gdp_growth);
+        nodeStates.manuf_va = discretize(rawData.NV_IND_MANF_ZS?.value, DISCRETIZATION_THRESHOLDS.manuf_va);
+        nodeStates.gini = discretize(rawData.SI_POV_GINI?.value, DISCRETIZATION_THRESHOLDS.gini);
+        nodeStates.unemployment = discretize(rawData.SL_UEM_TOTL_NE_ZS?.value, DISCRETIZATION_THRESHOLDS.unemployment);
+        nodeStates.debt = discretize(rawData.GGXWDG_NGDP?.value, DISCRETIZATION_THRESHOLDS.debt);
+        nodeStates.military_exp = discretize(rawData.MS_MIL_XPND_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.military_exp);
+        nodeStates.rd_exp = discretize(rawData.GB_XPD_RSDV_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.rd_exp);
+        nodeStates.patents = discretize(rawData.IP_PAT_RESD?.value, DISCRETIZATION_THRESHOLDS.patents);
+        nodeStates.political_stability = discretize(rawData.PV_PER_RNK?.value, DISCRETIZATION_THRESHOLDS.political_stability);
+        nodeStates.epi = discretize(rawData.EPI?.value, DISCRETIZATION_THRESHOLDS.epi);
+        nodeStates.nd_gain = discretize(rawData.ND_GAIN?.value, DISCRETIZATION_THRESHOLDS.nd_gain);
+        nodeStates.fertility = discretize(rawData.SP_DYN_TFRT_IN?.value, DISCRETIZATION_THRESHOLDS.fertility);
+        nodeStates.age_dependency = discretize(ageDependency, DISCRETIZATION_THRESHOLDS.age_dependency);
+        nodeStates.co2 = discretize(rawData.EN_ATM_CO2E_PC?.value, DISCRETIZATION_THRESHOLDS.co2);
+        nodeStates.renewable = discretize(rawData.EG_ELC_RNWX_ZS?.value, DISCRETIZATION_THRESHOLDS.renewable);
         
-        // Level 2
-        const biosphereIntegrity = getWeightedSum('biosphereIntegrity', p_data);
-        const demographicDynamism = getWeightedSum('demographicDynamism', p_data);
-        const foodSecurity = getWeightedSum('foodSecurity', p_data);
-        const politicalStability = getWeightedSum('politicalStability', p_data);
+        // 2. Infer states of composite nodes
+        for (const nodeName of Object.keys(NETWORK_STRUCTURE)) {
+            const parents = NETWORK_STRUCTURE[nodeName];
+            const cpt = CPTs[nodeName];
+            let distribution;
 
-        // Level 3
-        const economicEngine = getWeightedSum('economicEngine', p_data);
-        const socialCohesion = getWeightedSum('socialCohesion', {...p_data, political_stability_score: politicalStability});
-        const techCapacity = getWeightedSum('techCapacity', p_data);
-
-        // Level 4
-        const nationalResilience = getWeightedSum('nationalResilience', { socialCohesion, demographicDynamism, biosphereIntegrity, foodSecurity });
-        const powerProjection = getWeightedSum('powerProjection', { economicEngine, techCapacity, military_exp_score: p_data.military_exp_score });
-        const overstretchRisk = Math.max(0, (p_data.military_exp_score === null ? 50 : p_data.military_exp_score) - (economicEngine * 0.4));
-
-        // Level 5: Hegemonic Position
-        const riseScore = (techCapacity + (p_data.gdp_growth_score || 50) + nationalResilience) / 3;
-        const declineScore = (overstretchRisk + (100 - socialCohesion) + (100 - politicalStability)) / 3;
-
-        let position = 'Transition', progress = 75 + (declineScore / 10);
-        if (powerProjection > 65 && nationalResilience > 60 && riseScore > declineScore) { position = 'Consolidation'; progress = 40 + (riseScore / 10); } 
-        else if (riseScore > 60 && riseScore > declineScore) { position = 'Rise'; progress = 10 + (riseScore / 10); } 
-        else if (declineScore > 60 && declineScore > riseScore) { position = 'Decline'; progress = 70 + (declineScore / 10); }
-
-        return { hegemonicPosition: { label: position, progress }, nationalResilience, powerProjection, overstretchRisk, socialCohesion, techCapacity, foodSecurity };
+            if (nodeName === 'hegemonicPosition') {
+                const powerState = REVERSE_STATES[nodeStates.powerProjection?.state];
+                const resilienceState = REVERSE_STATES[nodeStates.nationalResilience?.state];
+                distribution = cpt.table[powerState]?.[resilienceState] || { Rise: 0.25, Consolidation: 0.25, Decline: 0.25, Transition: 0.25 };
+            } else {
+                let influenceScore = 0;
+                let totalWeight = 0;
+                for (const parent of parents) {
+                    const parentState = nodeStates[parent];
+                    const weight = cpt.weights[parent];
+                    influenceScore += (parentState === null ? STATES.Moderate : parentState) * weight;
+                    totalWeight += weight;
+                }
+                const normalizedInfluence = Math.max(0, Math.min(2, Math.round((influenceScore / totalWeight))));
+                distribution = cpt.table[normalizedInfluence] || { Weak: 0.34, Moderate: 0.33, Strong: 0.33 };
+            }
+            
+            const mostLikelyState = Object.keys(distribution).reduce((a, b) => distribution[a] > distribution[b] ? a : b);
+            
+            nodeStates[nodeName] = {
+                state: nodeName === 'hegemonicPosition' ? CYCLE_STATES[mostLikelyState] : STATES[mostLikelyState],
+                distribution: distribution,
+                stateName: mostLikelyState
+            };
+        }
+        return nodeStates;
     }
 
     async function runAnalysis() {
@@ -412,31 +501,80 @@
         dashboardContentWrapper.classList.add('hidden');
         loader.classList.remove('hidden');
         
-        const countryCode = countrySelect.value;
-        const data = await fetchData(countryCode);
-        const processedData = processData(data);
-        const modelOutput = runBayesianModel(processedData);
-        updateDashboard(modelOutput, processedData);
-        
-        const trendIndicatorKey = trendIndicatorSelect.value;
-        const trendIndicator = TREND_INDICATORS[trendIndicatorKey];
-        const historicalData = trendIndicator.source === 'WB' 
-            ? await fetchWorldBankData(countryCode, trendIndicator.code, '2000:2023')
-            : await fetchImfData(countryCode, trendIndicator.code);
-        updateHistoricalChart(historicalData, trendIndicatorKey);
-
-        loader.classList.add('hidden');
-        dashboardContentWrapper.classList.remove('hidden');
+        try {
+            const countryCode = countrySelect.value;
+            const rawData = await fetchData(countryCode);
+            const modelOutput = runBayesianInference(rawData);
+            
+            updateDashboard(modelOutput);
+            
+            const trendIndicatorKey = trendIndicatorSelect.value;
+            const trendIndicator = TREND_INDICATORS[trendIndicatorKey];
+            const historicalData = trendIndicator.source === 'WB' 
+                ? await fetchWorldBankData(countryCode, trendIndicator.code, '2000:2023', true)
+                : await fetchImfData(countryCode, trendIndicator.code, true);
+            updateHistoricalChart(historicalData, trendIndicatorKey);
+        } catch (error) {
+            console.error("An error occurred during analysis:", error);
+            // Optionally, display an error message to the user in the UI
+        } finally {
+            loader.classList.add('hidden');
+            dashboardContentWrapper.classList.remove('hidden');
+        }
     }
 
-    function updateDashboard(output, p_data) {
-        document.getElementById('hegemonic-position').textContent = output.hegemonicPosition.label;
-        document.getElementById('hegemonic-progress').style.width = `${output.hegemonicPosition.progress}%`;
-        
-        updateCoreDiagnostics(output, p_data);
-        updateCycleExplanation(output.hegemonicPosition.label);
+    // --- UI Update Functions ---
+    function updateDashboard(output) {
+        updateHegemonicDisplay(output.hegemonicPosition);
+        updateCoreDiagnostics(output);
+        updateCycleExplanation(output.hegemonicPosition.stateName);
     }
 
+    function createProbBar(distribution) {
+        const colors = { Weak: 'bg-red-500', Moderate: 'bg-yellow-500', Strong: 'bg-green-500', Rise: 'bg-blue-500', Consolidation: 'bg-green-500', Decline: 'bg-orange-500', Transition: 'bg-purple-500' };
+        let html = '<div class="prob-bar-container">';
+        for(const state in distribution) {
+            const prob = distribution[state] * 100;
+            if (prob > 0) {
+                html += `<div class="prob-bar ${colors[state] || 'bg-gray-500'}" style="width: ${prob}%">${prob > 10 ? state : ''}</div>`;
+            }
+        }
+        html += '</div>';
+        return html;
+    }
+
+    function updateHegemonicDisplay(hegemonNode) {
+        document.getElementById('hegemonic-distribution').innerHTML = createProbBar(hegemonNode.distribution);
+    }
+
+    function updateCoreDiagnostics(output) {
+        const container = document.getElementById('core-diagnostics-container');
+        if (!container) return;
+
+        const nodesToDisplay = {
+            'National Resilience': output.nationalResilience,
+            'Power Projection': output.powerProjection,
+            'Economic Engine': output.economicEngine,
+            'Technological Capacity': output.techCapacity,
+            'Social Cohesion': output.socialCohesion,
+            'Biosphere Integrity': output.biosphereIntegrity,
+        };
+
+        let html = '';
+        for (const label in nodesToDisplay) {
+            const node = nodesToDisplay[label];
+            html += `<div><span class="text-gray-400">${label}</span>`;
+            if (node && node.stateName) {
+                html += `<p class="text-xl font-bold text-white mt-1">${node.stateName}</p>`;
+                html += createProbBar(node.distribution);
+            } else {
+                 html += `<p class="text-xl font-bold text-gray-600 mt-1">Data Missing</p>`;
+            }
+            html += `</div>`;
+        }
+        container.innerHTML = html;
+    }
+    
     function updateHistoricalChart(data, label) {
         const ctx = document.getElementById('historical-chart').getContext('2d');
         if (historicalChart) historicalChart.destroy();
@@ -450,87 +588,6 @@
         });
     }
 
-    function updateCoreDiagnostics(output, p_data) {
-        const container = document.getElementById('core-diagnostics-container');
-        if (!container) return;
-
-        const mainScores = {
-            'National Resilience': output.nationalResilience,
-            'Power Projection': output.powerProjection,
-            'Imperial Overstretch Risk': output.overstretchRisk,
-            'Technological Dominance': output.techCapacity,
-            'Military Strength': p_data.military_exp_score,
-            'Food Security': output.foodSecurity,
-        };
-        let html = '';
-        for (const label in mainScores) {
-            const score = mainScores[label];
-            const color = score > 70 ? 'text-green-400' : score > 40 ? 'text-yellow-400' : 'text-red-400';
-            const scoreText = score === null ? 'N/A' : `${score.toFixed(1)} / 100`;
-            html += `<div><span class="text-gray-400">${label}</span><p class="text-2xl font-bold ${color}">${scoreText}</p></div>`;
-        }
-        
-        html += `
-            <div class="pt-4 border-t border-gray-800">
-                <div class="flex justify-between items-center mb-4">
-                     <div class="flex items-center space-x-2">
-                        <h4 class="text-lg font-semibold text-white">Social Cohesion</h4>
-                        <div class="relative group">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                            </svg>
-                            <span class="invisible group-hover:visible absolute w-64 bg-gray-700 text-white text-xs rounded py-2 px-3 z-10 bottom-full left-1/2 -translate-x-1/2 mb-2">
-                                Estimated as a weighted average of the Income Equality and Employment scores. You can adjust these weights in the Dynamic Modeling tab.
-                            </span>
-                        </div>
-                    </div>
-                     <p id="social-cohesion-score" class="text-2xl font-bold"></p>
-                </div>
-                <div id="social-cohesion-gauges" class="space-y-3"></div>
-            </div>`;
-        container.innerHTML = html;
-
-        // Now that the containers exist, update the social cohesion part
-        updateSocialCohesionGauges(p_data, output.socialCohesion);
-    }
-
-    function updateSocialCohesionGauges(p_data, totalScore) {
-        const container = document.getElementById('social-cohesion-gauges');
-        const scoreEl = document.getElementById('social-cohesion-score');
-        
-        if (!container || !scoreEl) return;
-
-        scoreEl.textContent = `${totalScore.toFixed(1)} / 100`;
-        scoreEl.className = `text-2xl font-bold ${totalScore > 70 ? 'text-green-400' : totalScore > 40 ? 'text-yellow-400' : 'text-red-400'}`;
-
-        const gauges = { 
-            'Income Equality': { score: p_data.gini_score }, 
-            'Employment': { score: p_data.unemployment_score }
-        };
-        
-        let gaugesHtml = '';
-        for (const label in gauges) {
-            const score = gauges[label].score;
-            if (score === null) {
-                gaugesHtml += `
-                    <div>
-                        <div class="flex justify-between mb-1"><span class="text-sm text-gray-400">${label}</span><span class="text-sm font-medium text-gray-500">Data N/A</span></div>
-                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="bg-gray-600 h-2 rounded-full" style="width: 100%"></div></div>
-                    </div>
-                `;
-            } else {
-                const color = score > 70 ? 'bg-green-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500';
-                gaugesHtml += `
-                    <div>
-                        <div class="flex justify-between mb-1"><span class="text-sm text-gray-400">${label}</span><span class="text-sm font-medium text-gray-300">${score.toFixed(1)}%</span></div>
-                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="${color} h-2 rounded-full" style="width: ${score}%"></div></div>
-                    </div>
-                `;
-            }
-        }
-        container.innerHTML = gaugesHtml;
-    }
-    
     function updateCycleExplanation(position) {
         const container = document.getElementById('cycle-explanation-scenarios');
         const explanations = {
@@ -540,36 +597,12 @@
             'Transition': 'A period of transition is marked by high instability and geopolitical chaos as the old order breaks down and new powers compete to shape the next one.'
         };
         const scenarios = {
-            'Rise': `
-                <h5 class="font-bold text-white mt-4">Investor Scenarios:</h5>
-                <ul class="list-disc list-inside space-y-1">
-                    <li><b>Bull Case:</b> Long-term investment in domestic infrastructure, technology, and consumer markets to capture growth.</li>
-                    <li><b>Base Case:</b> Expect volatility as the rising power challenges the existing order. Focus on sectors aligned with state-led industrial policy.</li>
-                    <li><b>Bear Case:</b> Risk of premature over-expansion or a harsh counter-reaction from the incumbent hegemon, leading to trade wars and instability.</li>
-                </ul>`,
-            'Consolidation': `
-                <h5 class="font-bold text-white mt-4">Investor Scenarios:</h5>
-                <ul class="list-disc list-inside space-y-1">
-                    <li><b>Bull Case:</b> Stable returns from mature, globally integrated markets and the hegemon's currency.</li>
-                    <li><b>Base Case:</b> Focus on blue-chip equities and sovereign bonds, but watch for signs of complacency and financialization.</li>
-                    <li><b>Bear Case:</b> The beginning of "imperial overstretch"; military commitments grow faster than the economy, planting the seeds of future decline.</li>
-                </ul>`,
-            'Decline': `
-                <h5 class="font-bold text-white mt-4">Investor Scenarios:</h5>
-                <ul class="list-disc list-inside space-y-1">
-                    <li><b>Bull Case:</b> Short-term opportunities in financial assets and sectors benefiting from high military spending.</li>
-                    <li><b>Base Case:</b> Increased market volatility and political risk. Diversify away from the hegemon's currency and debt. Hedge against inflation and instability.</li>
-                    <li><b>Bear Case:</b> A rapid, disorderly collapse of the hegemon's financial and political systems, triggering a global crisis. Capital flight to rising powers.</li>
-                </ul>`,
-            'Transition': `
-                <h5 class="font-bold text-white mt-4">Investor Scenarios:</h5>
-                <ul class="list-disc list-inside space-y-1">
-                    <li><b>Bull Case:</b> High-risk, high-reward opportunities in the technologies and regions that will define the next cycle.</li>
-                    <li><b>Base Case:</b> A chaotic, multipolar world. Focus on resilient, localized supply chains and assets that hold value in times of uncertainty (e.g., commodities, hard assets).</li>
-                    <li><b>Bear Case:</b> Systemic fragmentation and major power conflict ("Thucydides Trap"), leading to a prolonged period of deglobalization and economic depression.</li>
-                </ul>`
+            'Rise': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Long-term investment in domestic infrastructure, technology, and consumer markets to capture growth.</li><li><b>Base Case:</b> Expect volatility as the rising power challenges the existing order. Focus on sectors aligned with state-led industrial policy.</li><li><b>Bear Case:</b> Risk of premature over-expansion or a harsh counter-reaction from the incumbent hegemon, leading to trade wars and instability.</li></ul>`,
+            'Consolidation': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Stable returns from mature, globally integrated markets and the hegemon's currency.</li><li><b>Base Case:</b> Focus on blue-chip equities and sovereign bonds, but watch for signs of complacency and financialization.</li><li><b>Bear Case:</b> The beginning of "imperial overstretch"; military commitments grow faster than the economy, planting the seeds of future decline.</li></ul>`,
+            'Decline': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Short-term opportunities in financial assets and sectors benefiting from high military spending.</li><li><b>Base Case:</b> Increased market volatility and political risk. Diversify away from the hegemon's currency and debt. Hedge against inflation and instability.</li><li><b>Bear Case:</b> A rapid, disorderly collapse of the hegemon's financial and political systems, triggering a global crisis. Capital flight to rising powers.</li></ul>`,
+            'Transition': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> High-risk, high-reward opportunities in the technologies and regions that will define the next cycle.</li><li><b>Base Case:</b> A chaotic, multipolar world. Focus on resilient, localized supply chains and assets that hold value in times of uncertainty (e.g., commodities, hard assets).</li><li><b>Bear Case:</b> Systemic fragmentation and major power conflict ("Thucydides Trap"), leading to a prolonged period of deglobalization and economic depression.</li></ul>`
         };
-        container.innerHTML = `<p>${explanations[position] || ''}</p>${scenarios[position] || ''}`;
+        container.innerHTML = `<p>${explanations[position] || 'Analysis complete.'}</p>${scenarios[position] || ''}`;
     }
 
     function chartOptions(isTimeSeries = false) {
@@ -577,42 +610,118 @@
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { labels: { color: '#d1d5db', font: { family: "'Playfair Display', serif" } } } },
             scales: {
-                y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db', font: { family: "'Playfair Display', serif" } } },
+                y: { beginAtZero: false, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db', font: { family: "'Playfair Display', serif" } } },
                 x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db', font: { family: "'Playfair Display', serif" } } }
             }
         };
         if (isTimeSeries) { options.scales.x.type = 'time'; options.scales.x.time = { unit: 'year' }; }
         return options;
     }
-
+    
     function buildModelExplorer() {
-        const container = document.getElementById('model-explorer-content');
+        const container = document.getElementById('model-cpt-content');
         container.innerHTML = '';
-        const friendlyNames = { gdp_pc_score: 'GDP per Capita', gdp_growth_score: 'GDP Growth', manuf_va_score: 'Manufacturing VA', debt_score: 'Low Debt', gini_score: 'Income Equality', unemployment_score: 'Employment', rd_exp_score: 'R&D Spending', patents_score: 'Patents', stability_score: 'Political Stability', rule_of_law_score: 'Rule of Law', corruption_control_score: 'Control of Corruption', epi_score: 'EPI (Biodiversity)', nd_gain_score: 'ND-GAIN (Climate Risk)', socialCohesion: 'Social Cohesion', politicalStability: 'Political Stability', biosphereIntegrity: 'Biosphere Integrity', economicEngine: 'Economic Engine', techCapacity: 'Tech Capacity', military_exp_score: 'Military Spend', fertility_score: 'Fertility Rate', age_dependency_score: 'Age Dependency', co2_score: 'CO2 Emissions', renewable_score: 'Renewable Energy', demographicDynamism: 'Demographic Dynamism', foodSecurity: 'Food Security', agri_land_score: 'Agricultural Land Use', cereal_yield_score: 'Cereal Yield', political_stability_score: 'Political Stability' };
+        const friendlyNames = { ...LEAF_NODES, socialCohesion: 'Social Cohesion', demographicDynamism: 'Demo. Dynamism', biosphereIntegrity: 'Biosphere Int.', economicEngine: 'Econ. Engine', techCapacity: 'Tech Capacity', powerProjection: 'Power Proj.', nationalResilience: 'Nat. Resilience' };
 
-        for (const component in modelWeights) {
-            let componentHtml = `<div class="p-4 border border-gray-800 rounded-lg bg-gray-900/50"><h4 class="text-lg font-semibold text-blue-400 mb-3">${component.replace(/([A-Z])/g, ' $1').trim()}</h4><div class="space-y-4">`;
-            for (const weightKey in modelWeights[component]) {
-                const weightValue = modelWeights[component][weightKey];
-                componentHtml += `
-                    <div>
-                        <label for="${component}-${weightKey}" class="flex justify-between text-sm text-gray-300"><span>${friendlyNames[weightKey] || weightKey}</span><span id="${component}-${weightKey}-val">${weightValue}%</span></label>
-                        <input type="range" id="${component}-${weightKey}" data-component="${component}" data-weightkey="${weightKey}" min="0" max="100" value="${weightValue}" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
-                    </div>
-                `;
+        for (const nodeName in CPTs) {
+            const cpt = CPTs[nodeName];
+            const componentName = nodeName.replace(/([A-Z])/g, ' $1').trim();
+            let html = `<div class="p-4 border border-gray-800 rounded-lg bg-gray-900/50">
+                            <h4 class="text-lg font-semibold text-blue-400 mb-3">${componentName}</h4>`;
+
+            if (nodeName === 'hegemonicPosition') {
+                html += `<p class="text-sm text-gray-400 mb-4">Determined by the states of Power Projection and National Resilience.</p>
+                         <table class="cpt-table">
+                            <thead><tr><th>P(Hegemon | Power, Resilience)</th>${REVERSE_CYCLE_STATES.map(s => `<th>${s}</th>`).join('')}</tr></thead>
+                            <tbody>`;
+                for (const powerState of REVERSE_STATES) {
+                    for (const resilienceState of REVERSE_STATES) {
+                         const rowId = `${powerState}-${resilienceState}`;
+                         html += `<tr><td>If Power is <b>${powerState}</b> and Resilience is <b>${resilienceState}</b></td>`;
+                         const dist = cpt.table[powerState][resilienceState];
+                         for(const cycleState of REVERSE_CYCLE_STATES) {
+                            html += `<td><input type="number" class="cpt-input" value="${(dist[cycleState]*100).toFixed(0)}" data-node="${nodeName}" data-row-id="${rowId}" data-state="${cycleState}"> %</td>`;
+                         }
+                         html += `</tr>`;
+                    }
+                }
+                html += `</tbody></table>`;
+            } else {
+                const parents = NETWORK_STRUCTURE[nodeName];
+                html += `<p class="text-sm text-gray-400 mb-2">Parents: ${parents.map(p => friendlyNames[p] || p).join(', ')}</p>
+                         <table class="cpt-table">
+                            <thead><tr><th>If Avg. Parent State is...</th><th>P(Weak)</th><th>P(Moderate)</th><th>P(Strong)</th></tr></thead>
+                            <tbody>`;
+                cpt.table.forEach((dist, i) => {
+                    html += `<tr><td><b>${REVERSE_STATES[i]}</b></td>`;
+                    for(const state of REVERSE_STATES) {
+                         html += `<td><input type="number" class="cpt-input" value="${(dist[state]*100).toFixed(0)}" data-node="${nodeName}" data-row-index="${i}" data-state="${state}"> %</td>`;
+                    }
+                    html += `</tr>`;
+                });
+                html += `</tbody></table>`;
             }
-            componentHtml += `</div></div>`;
-            container.innerHTML += componentHtml;
+            html += `</div>`;
+            container.innerHTML += html;
         }
-
-        document.querySelectorAll('#model-explorer-content input[type="range"]').forEach(slider => {
-            slider.addEventListener('input', (e) => {
-                const { component, weightkey } = e.target.dataset;
-                modelWeights[component][weightkey] = parseInt(e.target.value);
-                document.getElementById(`${component}-${weightkey}-val`).textContent = `${e.target.value}%`;
-                runAnalysis();
-            });
+        
+        // Add event listeners for editable CPTs
+        document.querySelectorAll('.cpt-input').forEach(input => {
+            input.addEventListener('change', handleCptInputChange);
         });
+
+        buildModelGraph();
+    }
+
+    function handleCptInputChange(e) {
+        const input = e.target;
+        const nodeName = input.dataset.node;
+        const state = input.dataset.state;
+        let newValue = parseFloat(input.value);
+
+        if (isNaN(newValue)) {
+            // Reset if invalid input
+            input.value = parseFloat(input.defaultValue);
+            return;
+        }
+        newValue = Math.max(0, Math.min(100, newValue)); // Clamp between 0 and 100
+
+        let distribution, allStates;
+
+        if (nodeName === 'hegemonicPosition') {
+            const [powerState, resilienceState] = input.dataset.rowId.split('-');
+            distribution = CPTs[nodeName].table[powerState][resilienceState];
+            allStates = REVERSE_CYCLE_STATES;
+        } else {
+            const rowIndex = parseInt(input.dataset.rowIndex);
+            distribution = CPTs[nodeName].table[rowIndex];
+            allStates = REVERSE_STATES;
+        }
+        
+        const oldValue = distribution[state] * 100;
+        const delta = newValue - oldValue;
+        
+        // Normalize other values
+        const otherStates = allStates.filter(s => s !== state);
+        const otherStatesTotal = otherStates.reduce((sum, s) => sum + distribution[s] * 100, 0);
+
+        if (otherStatesTotal > 0) {
+            otherStates.forEach(s => {
+                const share = (distribution[s] * 100) / otherStatesTotal;
+                distribution[s] -= (delta * share) / 100;
+                distribution[s] = Math.max(0, distribution[s]); // Ensure no negative probability
+            });
+        }
+        
+        distribution[state] = newValue / 100;
+
+        // Final normalization pass to correct floating point errors and ensure sum is 1
+        const currentSum = allStates.reduce((sum, s) => sum + distribution[s], 0);
+        allStates.forEach(s => distribution[s] /= currentSum);
+
+        // Update UI and re-run analysis
+        buildModelExplorer(); // Re-renders the tables with new values and re-attaches listeners
+        runAnalysis();
     }
 
     function buildDataSourcesManager() {
@@ -624,9 +733,6 @@
                 <div class="p-4 bg-gray-900/50 rounded-lg border border-gray-800 flex items-center justify-between">
                     <div>
                         <h4 class="font-semibold text-white">${source.name} <span class="text-xs uppercase font-bold ${source.type === 'public' || source.type === 'static' ? 'text-green-400' : 'text-yellow-400'}">${source.type}</span></h4>
-                        <div class="mt-2 ${source.type !== 'proprietary' ? 'hidden' : ''}">
-                            <input type="text" placeholder="Enter API Key" class="p-1 text-sm bg-gray-700 border border-gray-600 rounded-md w-64" value="${source.apiKey}">
-                        </div>
                     </div>
                     <div class="flex items-center">
                         <span class="text-sm mr-2 ${source.enabled ? 'text-gray-300' : 'text-gray-500'}">${source.enabled ? 'Enabled' : 'Disabled'}</span>
@@ -652,58 +758,61 @@
 
     function buildModelGraph() {
         const container = document.getElementById('model-graph-container');
-        container.innerHTML = `
-            <svg width="100%" height="600" viewBox="0 0 800 600">
-                <defs>
-                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" />
-                    </marker>
-                </defs>
-                <style>
-                    .node { font-family: 'Playfair Display', serif; }
-                    .l2-node { font-size: 13px; fill: #9ca3af; }
-                    .l3-node { font-size: 14px; fill: #60a5fa; font-weight: bold; }
-                    .l4-node { font-size: 16px; fill: #f97316; font-weight: bold; }
-                    .l5-node { font-size: 18px; fill: #ec4899; font-weight: bold; }
-                    .edge { stroke: #4b5563; stroke-width: 1; marker-end: url(#arrow); }
-                </style>
+        
+        const nodePositions = {};
+        const columnWidth = 300;
+        const columnX = [50, 350, 650, 950];
 
-                <!-- Level 2 Nodes -->
-                <text x="100" y="100" class="node l2-node" text-anchor="middle">Biosphere Integrity</text>
-                <text x="100" y="200" class="node l2-node" text-anchor="middle">Demographic Dynamism</text>
-                <text x="100" y="300" class="node l2-node" text-anchor="middle">Political Stability</text>
-                <text x="100" y="400" class="node l2-node" text-anchor="middle">Food Security</text>
+        let html = `<svg width="1100" height="800">
+            <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" /></marker></defs>
+            <style>
+                .node-text { font-family: 'Playfair Display', serif; font-size: 16px; }
+                .l0 { fill: #9ca3af; } /* Leaf */
+                .l1 { fill: #60a5fa; font-weight: bold; } /* Level 1 Composite */
+                .l2 { fill: #f97316; font-weight: bold; } /* Level 2 Composite */
+                .l3 { fill: #ec4899; font-weight: bold; } /* Final */
+                .edge { stroke: #6b7280; stroke-width: 1.5; marker-end: url(#arrow); fill: none; }
+            </style>`;
 
-                <!-- Level 3 Nodes -->
-                <text x="300" y="50" class="node l3-node" text-anchor="middle">Economic Engine</text>
-                <text x="300" y="250" class="node l3-node" text-anchor="middle">Social Cohesion</text>
-                <text x="300" y="450" class="node l3-node" text-anchor="middle">Tech Capacity</text>
+        // Position nodes
+        const leafNodes = Object.keys(LEAF_NODES);
+        const l1Nodes = ['economicEngine', 'socialCohesion', 'techCapacity', 'biosphereIntegrity', 'demographicDynamism'];
+        const l2Nodes = ['powerProjection', 'nationalResilience'];
+        const l3Nodes = ['hegemonicPosition'];
 
-                <!-- Level 4 Nodes -->
-                <text x="550" y="150" class="node l4-node" text-anchor="middle">Power Projection</text>
-                <text x="550" y="350" class="node l4-node" text-anchor="middle">National Resilience</text>
-                
-                <!-- Level 5 Node -->
-                <text x="750" y="250" class="node l5-node" text-anchor="middle">Hegemonic Position</text>
+        [leafNodes, l1Nodes, l2Nodes, l3Nodes].forEach((nodes, colIdx) => {
+            const yStep = 800 / (nodes.length + 1);
+            nodes.forEach((nodeName, rowIdx) => {
+                nodePositions[nodeName] = { x: columnX[colIdx] + 75, y: (rowIdx + 1) * yStep };
+            });
+        });
+        
+        // Draw edges
+        for (const nodeName in NETWORK_STRUCTURE) {
+            const parents = NETWORK_STRUCTURE[nodeName];
+            parents.forEach(parentName => {
+                const p1 = nodePositions[parentName];
+                const p2 = nodePositions[nodeName];
+                if (p1 && p2) {
+                    html += `<path d="M ${p1.x + 70} ${p1.y} C ${p1.x + 170} ${p1.y}, ${p2.x - 170} ${p2.y}, ${p2.x - 70} ${p2.y}" class="edge" />`;
+                }
+            });
+        }
 
-                <!-- Edges from L2 to L3 -->
-                <line x1="180" y1="300" x2="250" y2="250" class="edge" /> <!-- Political Stability -> Social Cohesion -->
-                
-                <!-- Edges from L3 to L4 -->
-                <line x1="400" y1="50" x2="500" y2="150" class="edge" /> <!-- Economic Engine -> Power Projection -->
-                <line x1="400" y1="450" x2="500" y2="150" class="edge" /> <!-- Tech Capacity -> Power Projection -->
-                <line x1="400" y1="250" x2="500" y2="350" class="edge" /> <!-- Social Cohesion -> National Resilience -->
+        // Draw nodes
+        for (const nodeName in nodePositions) {
+            const pos = nodePositions[nodeName];
+            let levelClass = 'l0';
+            if (l1Nodes.includes(nodeName)) levelClass = 'l1';
+            if (l2Nodes.includes(nodeName)) levelClass = 'l2';
+            if (l3Nodes.includes(nodeName)) levelClass = 'l3';
+            
+            const displayName = LEAF_NODES[nodeName] || nodeName.replace(/([A-Z])/g, ' $1').trim();
+            html += `<text x="${pos.x}" y="${pos.y}" class="node-text ${levelClass}" text-anchor="middle">${displayName}</text>`;
+        }
 
-                <!-- Edges from L2 to L4 -->
-                <line x1="180" y1="100" x2="500" y2="350" class="edge" /> <!-- Biosphere -> Resilience -->
-                <line x1="180" y1="200" x2="500" y2="350" class="edge" /> <!-- Demographics -> Resilience -->
-                <line x1="180" y1="400" x2="500" y2="350" class="edge" /> <!-- Food Security -> Resilience -->
-                
-                <!-- Edges from L4 to L5 -->
-                <line x1="650" y1="150" x2="700" y2="250" class="edge" />
-                <line x1="650" y1="350" x2="700" y2="250" class="edge" />
-            </svg>
-        `;
+        html += `</svg>`;
+        container.innerHTML = html;
     }
 
     document.addEventListener('DOMContentLoaded', initialize);
