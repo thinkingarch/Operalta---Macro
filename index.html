@@ -226,54 +226,45 @@
     const LEAF_NODES = {
         // Biosphere Integrity parents
         epi: 'EPI', nd_gain: 'ND-GAIN', co2: 'CO2', renewable: 'Renewable',
-        // Economic Engine parents
-        gdp_pc: 'GDP/Cap', gdp_growth: 'GDP Growth', manuf_va: 'Manuf. VA', debt: 'Gov. Debt',
-        // Power Projection parent (moved under debt)
-        military_exp: 'Military Exp.',
-        // Social Cohesion parents
-        gini: 'Inequality', unemployment: 'Unemployment', political_stability: 'P. Stability',
-        // Tech Capacity parents
-        rd_exp: 'R&D Exp.', patents: 'Patents',
         // Demographic Dynamism parents
-        fertility: 'Fertility', age_dependency: 'Age Depend.'
+        fertility: 'Fertility', age_dependency: 'Age Depend.',
+        // Economic Engine parents
+        gdp_pc: 'GDP/Cap', current_account: 'Current Acc.', manuf_vs_finance: 'Manuf/Fin Ratio',
+        // Tech Capacity parents
+        rd_exp: 'R&D Exp.', patents: 'Patents', internet_users: 'Internet Users',
+        // Social Cohesion parents
+        gini: 'Inequality', corruption_control: 'Corruption Ctrl', rule_of_law: 'Rule of Law', political_stability: 'P. Stability',
+        // Relative Power Projection parent
+        military_exp: 'Military Exp.',
     };
 
     // 1. Discretization thresholds for raw indicators
     const DISCRETIZATION_THRESHOLDS = {
-        gdp_pc: [20000, 55000], gdp_growth: [1, 4], manuf_va: [10, 20],
-        gini: [0.45, 0.35, true], unemployment: [7, 4, true], debt: [100, 60, true],
-        military_exp: [1, 3], rd_exp: [1, 2.5], patents: [10000, 100000],
-        political_stability: [25, 75], rule_of_law: [25, 75], corruption_control: [25, 75],
-        epi: [40, 60], nd_gain: [50, 65], fertility: [1.5, 2.5],
-        age_dependency: [60, 50, true], co2: [15, 5, true], renewable: [20, 60]
+        epi: [40, 60], nd_gain: [50, 65], co2: [15, 5, true], renewable: [20, 60],
+        fertility: [1.5, 2.5], age_dependency: [60, 50, true],
+        gdp_pc: [20000, 55000], current_account: [-2, 2], manuf_vs_finance: [0.8, 1.5],
+        rd_exp: [1, 2.5], patents: [10000, 100000], internet_users: [60, 90],
+        gini: [0.45, 0.35, true], corruption_control: [25, 75], rule_of_law: [25, 75], political_stability: [25, 75],
+        military_exp: [1, 3],
     };
 
     // 2. Network Structure (Parents for each node)
     const NETWORK_STRUCTURE = {
-        economicEngine: ['gdp_pc', 'gdp_growth', 'manuf_va', 'debt'],
-        socialCohesion: ['gini', 'unemployment', 'political_stability'],
-        techCapacity: ['rd_exp', 'patents'],
+        // Layer 1
         biosphereIntegrity: ['epi', 'nd_gain', 'co2', 'renewable'],
         demographicDynamism: ['fertility', 'age_dependency'],
-        nationalResilience: ['socialCohesion', 'demographicDynamism', 'biosphereIntegrity'],
-        powerProjection: ['economicEngine', 'techCapacity', 'military_exp'],
-        hegemonicPosition: ['powerProjection', 'nationalResilience']
+        // Layer 2
+        economicEngineType: ['gdp_pc', 'current_account', 'manuf_vs_finance'],
+        technologicalCapacity: ['rd_exp', 'patents', 'internet_users'],
+        socialCohesion: ['gini', 'corruption_control', 'rule_of_law', 'political_stability'],
+        // Layer 3
+        nationalResilience: ['socialCohesion', 'biosphereIntegrity', 'demographicDynamism'],
+        relativePowerProjection: ['economicEngineType', 'technologicalCapacity', 'military_exp'],
+        hegemonicCyclePosition: ['nationalResilience', 'relativePowerProjection']
     };
 
     // 3. Conditional Probability Tables (CPTs)
     let CPTs = {
-        economicEngine: {
-            weights: { gdp_pc: 0.4, gdp_growth: 0.3, manuf_va: 0.15, debt: 0.15 },
-            table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
-        },
-        socialCohesion: {
-            weights: { gini: 0.5, unemployment: 0.3, political_stability: 0.2 },
-            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
-        },
-        techCapacity: {
-            weights: { rd_exp: 0.6, patents: 0.4 },
-            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.1, Moderate: 0.6, Strong: 0.3 }, { Weak: 0.0, Moderate: 0.2, Strong: 0.8 } ]
-        },
         biosphereIntegrity: {
             weights: { epi: 0.3, nd_gain: 0.3, co2: 0.2, renewable: 0.2 },
             table: [ { Weak: 0.6, Moderate: 0.3, Strong: 0.1 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.1, Moderate: 0.3, Strong: 0.6 } ]
@@ -282,30 +273,45 @@
             weights: { fertility: 0.5, age_dependency: 0.5 },
             table: [ { Weak: 0.6, Moderate: 0.3, Strong: 0.1 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.1, Moderate: 0.3, Strong: 0.6 } ]
         },
-        nationalResilience: {
-            weights: { socialCohesion: 0.5, demographicDynamism: 0.25, biosphereIntegrity: 0.25 },
-            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
-        },
-        powerProjection: {
-            weights: { economicEngine: 0.5, techCapacity: 0.4, military_exp: 0.1 },
+        economicEngineType: {
+            weights: { gdp_pc: 0.4, current_account: 0.3, manuf_vs_finance: 0.3 },
             table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
         },
-        hegemonicPosition: {
+        technologicalCapacity: {
+            weights: { rd_exp: 0.5, patents: 0.3, internet_users: 0.2 },
+            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.1, Moderate: 0.6, Strong: 0.3 }, { Weak: 0.0, Moderate: 0.2, Strong: 0.8 } ]
+        },
+        socialCohesion: {
+            weights: { gini: 0.4, corruption_control: 0.2, rule_of_law: 0.2, political_stability: 0.2 },
+            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
+        },
+        nationalResilience: {
+            weights: { socialCohesion: 0.6, biosphereIntegrity: 0.2, demographicDynamism: 0.2 },
+            table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
+        },
+        relativePowerProjection: {
+            weights: { economicEngineType: 0.5, technologicalCapacity: 0.4, military_exp: 0.1 },
+            table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
+        },
+        hegemonicCyclePosition: {
             table: {
+                // Resilience: Weak
                 Weak: {
-                    Weak:       { Rise: 0.05, Consolidation: 0.0,  Decline: 0.7, Transition: 0.25 },
-                    Moderate:   { Rise: 0.1,  Consolidation: 0.0,  Decline: 0.6, Transition: 0.3  },
-                    Strong:     { Rise: 0.2,  Consolidation: 0.05, Decline: 0.4, Transition: 0.35 }
+                    Weak:       { Rise: 0.05, Consolidation: 0.0,  Decline: 0.70, Transition: 0.25 },
+                    Moderate:   { Rise: 0.10, Consolidation: 0.0,  Decline: 0.60, Transition: 0.30 },
+                    Strong:     { Rise: 0.15, Consolidation: 0.05, Decline: 0.45, Transition: 0.35 }
                 },
+                // Resilience: Moderate
                 Moderate: {
-                    Weak:       { Rise: 0.2,  Consolidation: 0.05, Decline: 0.4, Transition: 0.35 },
-                    Moderate:   { Rise: 0.4,  Consolidation: 0.2,  Decline: 0.2, Transition: 0.2  },
-                    Strong:     { Rise: 0.6,  Consolidation: 0.3,  Decline: 0.05,Transition: 0.05 }
+                    Weak:       { Rise: 0.15, Consolidation: 0.05, Decline: 0.50, Transition: 0.30 },
+                    Moderate:   { Rise: 0.40, Consolidation: 0.2,  Decline: 0.20, Transition: 0.20 },
+                    Strong:     { Rise: 0.50, Consolidation: 0.4,  Decline: 0.05, Transition: 0.05 }
                 },
+                // Resilience: Strong
                 Strong: {
-                    Weak:       { Rise: 0.1,  Consolidation: 0.2,  Decline: 0.4, Transition: 0.3  },
-                    Moderate:   { Rise: 0.1,  Consolidation: 0.7,  Decline: 0.1, Transition: 0.1  },
-                    Strong:     { Rise: 0.05, Consolidation: 0.85, Decline: 0.05,Transition: 0.05 }
+                    Weak:       { Rise: 0.30, Consolidation: 0.10, Decline: 0.20, Transition: 0.40 },
+                    Moderate:   { Rise: 0.40, Consolidation: 0.50, Decline: 0.05, Transition: 0.05 },
+                    Strong:     { Rise: 0.10, Consolidation: 0.85, Decline: 0.0,  Transition: 0.05 }
                 }
             }
         }
@@ -395,9 +401,9 @@
         document.querySelector(`.nav-link[data-view="${viewId}"]`).classList.add('bg-gray-800', 'text-white');
     }
 
-    // --- Data Fetching (Largely unchanged) ---
+    // --- Data Fetching ---
     async function fetchData(countryCode) {
-        const wbIndicators = 'NY.GDP.PCAP.CD;NY.GDP.MKTP.KD.ZG;NV.IND.MANF.ZS;SI.POV.GINI;SL.UEM.TOTL.NE.ZS;MS.MIL.XPND.GD.ZS;GB.XPD.RSDV.GD.ZS;IP.PAT.RESD;PV.PER.RNK;RL.PER.RNK;CC.PER.RNK;SP.DYN.TFRT.IN;SP.POP.DPND.OL;SP.POP.DPND.YG;EN.ATM.CO2E.PC;EG.ELC.RNWX.ZS';
+        const wbIndicators = 'NY.GDP.PCAP.CD;NV.IND.MANF.ZS;MS.MIL.XPND.GD.ZS;IP.PAT.RESD;PV.PER.RNK;RL.PER.RNK;CC.PER.RNK;SP.DYN.TFRT.IN;SP.POP.DPND.OL;SP.POP.DPND.YG;EN.ATM.CO2E.PC;EG.ELC.RNWX.ZS;BN.CAB.XOKA.GD.ZS;NV.FSM.TOTL.ZS;IT.NET.USER.ZS;GB.XPD.RSDV.GD.ZS';
         const promises = [
             dataSources.worldBank.enabled ? fetchWorldBankData(countryCode, wbIndicators) : Promise.resolve({}),
             dataSources.imf.enabled ? fetchImfData(countryCode, 'GGXWDG_NGDP') : Promise.resolve({}),
@@ -496,22 +502,27 @@
 
         // 1. Discretize leaf nodes (raw indicators)
         const ageDependency = (rawData.SP_POP_DPND_OL?.value || 0) + (rawData.SP_POP_DPND_YG?.value || 0);
-        nodeStates.gdp_pc = discretize(rawData.NY_GDP_PCAP_CD?.value, DISCRETIZATION_THRESHOLDS.gdp_pc);
-        nodeStates.gdp_growth = discretize(rawData.NY_GDP_MKTP_KD_ZG?.value, DISCRETIZATION_THRESHOLDS.gdp_growth);
-        nodeStates.manuf_va = discretize(rawData.NV_IND_MANF_ZS?.value, DISCRETIZATION_THRESHOLDS.manuf_va);
-        nodeStates.gini = discretize(rawData.SI_POV_GINI?.value, DISCRETIZATION_THRESHOLDS.gini);
-        nodeStates.unemployment = discretize(rawData.SL_UEM_TOTL_NE_ZS?.value, DISCRETIZATION_THRESHOLDS.unemployment);
-        nodeStates.debt = discretize(rawData.GGXWDG_NGDP?.value, DISCRETIZATION_THRESHOLDS.debt);
-        nodeStates.military_exp = discretize(rawData.MS_MIL_XPND_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.military_exp);
-        nodeStates.rd_exp = discretize(rawData.GB_XPD_RSDV_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.rd_exp);
-        nodeStates.patents = discretize(rawData.IP_PAT_RESD?.value, DISCRETIZATION_THRESHOLDS.patents);
-        nodeStates.political_stability = discretize(rawData.PV_PER_RNK?.value, DISCRETIZATION_THRESHOLDS.political_stability);
+        const manufValue = rawData.NV_IND_MANF_ZS?.value;
+        const financeValue = rawData.NV_FSM_TOTL_ZS?.value;
+        const manufVsFinance = (financeValue > 0) ? manufValue / financeValue : null;
+
         nodeStates.epi = discretize(rawData.EPI?.value, DISCRETIZATION_THRESHOLDS.epi);
         nodeStates.nd_gain = discretize(rawData.ND_GAIN?.value, DISCRETIZATION_THRESHOLDS.nd_gain);
-        nodeStates.fertility = discretize(rawData.SP_DYN_TFRT_IN?.value, DISCRETIZATION_THRESHOLDS.fertility);
-        nodeStates.age_dependency = discretize(ageDependency, DISCRETIZATION_THRESHOLDS.age_dependency);
         nodeStates.co2 = discretize(rawData.EN_ATM_CO2E_PC?.value, DISCRETIZATION_THRESHOLDS.co2);
         nodeStates.renewable = discretize(rawData.EG_ELC_RNWX_ZS?.value, DISCRETIZATION_THRESHOLDS.renewable);
+        nodeStates.fertility = discretize(rawData.SP_DYN_TFRT_IN?.value, DISCRETIZATION_THRESHOLDS.fertility);
+        nodeStates.age_dependency = discretize(ageDependency, DISCRETIZATION_THRESHOLDS.age_dependency);
+        nodeStates.gdp_pc = discretize(rawData.NY_GDP_PCAP_CD?.value, DISCRETIZATION_THRESHOLDS.gdp_pc);
+        nodeStates.current_account = discretize(rawData.BN_CAB_XOKA_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.current_account);
+        nodeStates.manuf_vs_finance = discretize(manufVsFinance, DISCRETIZATION_THRESHOLDS.manuf_vs_finance);
+        nodeStates.rd_exp = discretize(rawData.GB_XPD_RSDV_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.rd_exp);
+        nodeStates.patents = discretize(rawData.IP_PAT_RESD?.value, DISCRETIZATION_THRESHOLDS.patents);
+        nodeStates.internet_users = discretize(rawData.IT_NET_USER_ZS?.value, DISCRETIZATION_THRESHOLDS.internet_users);
+        nodeStates.gini = discretize(rawData.SI_POV_GINI?.value, DISCRETIZATION_THRESHOLDS.gini);
+        nodeStates.corruption_control = discretize(rawData.CC_PER_RNK?.value, DISCRETIZATION_THRESHOLDS.corruption_control);
+        nodeStates.rule_of_law = discretize(rawData.RL_PER_RNK?.value, DISCRETIZATION_THRESHOLDS.rule_of_law);
+        nodeStates.political_stability = discretize(rawData.PV_PER_RNK?.value, DISCRETIZATION_THRESHOLDS.political_stability);
+        nodeStates.military_exp = discretize(rawData.MS_MIL_XPND_GD_ZS?.value, DISCRETIZATION_THRESHOLDS.military_exp);
         
         // 2. Infer states of composite nodes
         for (const nodeName of Object.keys(NETWORK_STRUCTURE)) {
@@ -519,8 +530,8 @@
             const cpt = CPTs[nodeName];
             let distribution;
 
-            if (nodeName === 'hegemonicPosition') {
-                const powerState = REVERSE_STATES[nodeStates.powerProjection?.state];
+            if (nodeName === 'hegemonicCyclePosition') {
+                const powerState = REVERSE_STATES[nodeStates.relativePowerProjection?.state];
                 const resilienceState = REVERSE_STATES[nodeStates.nationalResilience?.state];
                 distribution = cpt.table[powerState]?.[resilienceState] || { Rise: 0.25, Consolidation: 0.25, Decline: 0.25, Transition: 0.25 };
             } else {
@@ -539,7 +550,7 @@
             const mostLikelyState = Object.keys(distribution).reduce((a, b) => distribution[a] > distribution[b] ? a : b);
             
             nodeStates[nodeName] = {
-                state: nodeName === 'hegemonicPosition' ? CYCLE_STATES[mostLikelyState] : STATES[mostLikelyState],
+                state: nodeName === 'hegemonicCyclePosition' ? CYCLE_STATES[mostLikelyState] : STATES[mostLikelyState],
                 distribution: distribution,
                 stateName: mostLikelyState
             };
@@ -574,9 +585,10 @@
 
     // --- UI Update Functions ---
     function updateDashboard(output) {
-        updateHegemonicDisplay(output.hegemonicPosition);
+        const countryName = COUNTRIES[currentCountryCode];
+        updateHegemonicDisplay(output.hegemonicCyclePosition);
         updateCoreDiagnostics(output);
-        updateCycleExplanation(output.hegemonicPosition.stateName);
+        updateCycleExplanation(output.hegemonicCyclePosition.stateName, countryName, output);
     }
 
     function createProbBar(distribution) {
@@ -602,11 +614,10 @@
 
         const nodesToDisplay = {
             'National Resilience': output.nationalResilience,
-            'Power Projection': output.powerProjection,
-            'Economic Engine': output.economicEngine,
-            'Technological Capacity': output.techCapacity,
+            'Relative Power Projection': output.relativePowerProjection,
+            'Economic Engine Type': output.economicEngineType,
+            'Technological Capacity': output.technologicalCapacity,
             'Social Cohesion': output.socialCohesion,
-            'Biosphere Integrity': output.biosphereIntegrity,
         };
 
         let html = '';
@@ -637,7 +648,7 @@
         });
     }
 
-    function updateCycleExplanation(position) {
+    function updateCycleExplanation(position, countryName, modelOutput) {
         const container = document.getElementById('cycle-explanation-scenarios');
         const explanations = {
             'Rise': 'A rising power is characterized by strong economic growth, high social cohesion, and rapid technological advancement, allowing it to expand its influence.',
@@ -645,11 +656,18 @@
             'Decline': 'A declining power faces internal fragmentation, imperial overstretch, and rising challengers. It often shifts from providing stability to extracting value from the system.',
             'Transition': 'A period of transition is marked by high instability and geopolitical chaos as the old order breaks down and new powers compete to shape the next one.'
         };
+        
+        // --- DYNAMIC SCENARIOS ---
+        const drivers = {
+            strength: modelOutput.technologicalCapacity.stateName === 'Strong' ? 'its strong Technological Capacity' : 'a robust Economic Engine',
+            weakness: modelOutput.socialCohesion.stateName === 'Weak' ? 'significant social fragmentation' : 'a financialized economy prone to overstretch',
+        };
+
         const scenarios = {
-            'Rise': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Long-term investment in domestic infrastructure, technology, and consumer markets to capture growth.</li><li><b>Base Case:</b> Expect volatility as the rising power challenges the existing order. Focus on sectors aligned with state-led industrial policy.</li><li><b>Bear Case:</b> Risk of premature over-expansion or a harsh counter-reaction from the incumbent hegemon, leading to trade wars and instability.</li></ul>`,
-            'Consolidation': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Stable returns from mature, globally integrated markets and the hegemon's currency.</li><li><b>Base Case:</b> Focus on blue-chip equities and sovereign bonds, but watch for signs of complacency and financialization.</li><li><b>Bear Case:</b> The beginning of "imperial overstretch"; military commitments grow faster than the economy, planting the seeds of future decline.</li></ul>`,
-            'Decline': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Short-term opportunities in financial assets and sectors benefiting from high military spending.</li><li><b>Base Case:</b> Increased market volatility and political risk. Diversify away from the hegemon's currency and debt. Hedge against inflation and instability.</li><li><b>Bear Case:</b> A rapid, disorderly collapse of the hegemon's financial and political systems, triggering a global crisis. Capital flight to rising powers.</li></ul>`,
-            'Transition': `<h5 class="font-bold text-white mt-4">Investor Scenarios:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> High-risk, high-reward opportunities in the technologies and regions that will define the next cycle.</li><li><b>Base Case:</b> A chaotic, multipolar world. Focus on resilient, localized supply chains and assets that hold value in times of uncertainty (e.g., commodities, hard assets).</li><li><b>Bear Case:</b> Systemic fragmentation and major power conflict ("Thucydides Trap"), leading to a prolonged period of deglobalization and economic depression.</li></ul>`
+            'Rise': `<h5 class="font-bold text-white mt-4">Investor Scenarios for ${countryName}:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Long-term investment in domestic infrastructure and technology sectors to capture the growth driven by ${drivers.strength}.</li><li><b>Base Case:</b> Expect volatility as ${countryName} challenges the existing order. Focus on sectors aligned with its state-led industrial policy.</li><li><b>Bear Case:</b> Risk of premature over-expansion or a harsh counter-reaction from incumbent powers, leading to trade wars and instability.</li></ul>`,
+            'Consolidation': `<h5 class="font-bold text-white mt-4">Investor Scenarios for ${countryName}:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Stable returns from mature, globally integrated markets and ${countryName}'s currency, underpinned by ${drivers.strength}.</li><li><b>Base Case:</b> Focus on blue-chip equities and sovereign bonds, but watch for signs of complacency and the beginnings of ${drivers.weakness}.</li><li><b>Bear Case:</b> The start of "imperial overstretch"; military commitments may grow faster than the economic base, planting the seeds of future decline.</li></ul>`,
+            'Decline': `<h5 class="font-bold text-white mt-4">Investor Scenarios for ${countryName}:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> Despite the overall decline, ${drivers.strength} may offer short-term opportunities in specialized, high-margin sectors.</li><li><b>Base Case:</b> Increased market volatility and political risk driven by ${drivers.weakness}. Diversify away from ${countryName}'s currency and debt. Hedge against inflation.</li><li><b>Bear Case:</b> A rapid, disorderly collapse of financial and political systems, triggering a global crisis. Capital flight to rising powers.</li></ul>`,
+            'Transition': `<h5 class="font-bold text-white mt-4">Investor Scenarios for ${countryName}:</h5><ul class="list-disc list-inside space-y-1"><li><b>Bull Case:</b> High-risk, high-reward opportunities in the technologies and regions that will define the next cycle, leveraging ${countryName}'s residual ${drivers.strength}.</li><li><b>Base Case:</b> A chaotic, multipolar world. Focus on resilient, localized supply chains and assets that hold value in times of uncertainty (e.g., commodities).</li><li><b>Bear Case:</b> Systemic fragmentation and major power conflict, exacerbated by ${drivers.weakness}, leading to a prolonged period of deglobalization.</li></ul>`
         };
         container.innerHTML = `<p>${explanations[position] || 'Analysis complete.'}</p>${scenarios[position] || ''}`;
     }
@@ -670,7 +688,7 @@
     function buildModelExplorer() {
         const container = document.getElementById('model-cpt-content');
         container.innerHTML = '';
-        const friendlyNames = { ...LEAF_NODES, socialCohesion: 'Social Cohesion', demographicDynamism: 'Demo. Dynamism', biosphereIntegrity: 'Biosphere Int.', economicEngine: 'Econ. Engine', techCapacity: 'Tech Capacity', powerProjection: 'Power Proj.', nationalResilience: 'Nat. Resilience' };
+        const friendlyNames = { ...LEAF_NODES, socialCohesion: 'Social Cohesion', demographicDynamism: 'Demographic Dynamism', biosphereIntegrity: 'Biosphere Integrity', economicEngineType: 'Economic Engine Type', technologicalCapacity: 'Technological Capacity', relativePowerProjection: 'Relative Power Projection', nationalResilience: 'National Resilience' };
 
         for (const nodeName in CPTs) {
             const cpt = CPTs[nodeName];
@@ -678,8 +696,8 @@
             let html = `<div class="p-4 border border-gray-800 rounded-lg bg-gray-900/50">
                             <h4 class="text-lg font-semibold text-blue-400 mb-3">${componentName}</h4>`;
 
-            if (nodeName === 'hegemonicPosition') {
-                html += `<p class="text-sm text-gray-400 mb-4">Determined by the states of Power Projection and National Resilience.</p>
+            if (nodeName === 'hegemonicCyclePosition') {
+                html += `<p class="text-sm text-gray-400 mb-4">Determined by the states of Relative Power Projection and National Resilience.</p>
                          <table class="cpt-table">
                             <thead><tr><th>P(Hegemon | Power, Resilience)</th>${REVERSE_CYCLE_STATES.map(s => `<th>${s}</th>`).join('')}</tr></thead>
                             <tbody>`;
@@ -737,7 +755,7 @@
 
         let distribution, allStates;
 
-        if (nodeName === 'hegemonicPosition') {
+        if (nodeName === 'hegemonicCyclePosition') {
             const [powerState, resilienceState] = input.dataset.rowId.split('-');
             distribution = CPTs[nodeName].table[powerState][resilienceState];
             allStates = REVERSE_CYCLE_STATES;
@@ -809,10 +827,9 @@
         const container = document.getElementById('model-graph-container');
         
         const nodePositions = {};
-        const columnWidth = 300;
         const columnX = [50, 350, 650, 950];
 
-        let html = `<svg width="1100" height="800">
+        let html = `<svg width="1100" height="900">
             <defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280" /></marker></defs>
             <style>
                 .node-text { font-family: 'Playfair Display', serif; font-size: 16px; }
@@ -824,13 +841,20 @@
             </style>`;
 
         // Position nodes
-        const leafNodes = Object.keys(LEAF_NODES);
-        const l1Nodes = ['biosphereIntegrity', 'economicEngine', 'socialCohesion', 'techCapacity', 'demographicDynamism'];
-        const l2Nodes = ['powerProjection', 'nationalResilience'];
-        const l3Nodes = ['hegemonicPosition'];
+        const orderedLeafNodes = [
+            'epi', 'nd_gain', 'co2', 'renewable', 
+            'fertility', 'age_dependency',
+            'gdp_pc', 'current_account', 'manuf_vs_finance',
+            'rd_exp', 'patents', 'internet_users',
+            'military_exp',
+            'gini', 'corruption_control', 'rule_of_law', 'political_stability', 
+        ];
+        const l1Nodes = ['biosphereIntegrity', 'demographicDynamism', 'economicEngineType', 'technologicalCapacity', 'socialCohesion'];
+        const l2Nodes = ['nationalResilience', 'relativePowerProjection'];
+        const l3Nodes = ['hegemonicCyclePosition'];
 
-        [leafNodes, l1Nodes, l2Nodes, l3Nodes].forEach((nodes, colIdx) => {
-            const yStep = 800 / (nodes.length + 1);
+        [orderedLeafNodes, l1Nodes, l2Nodes, l3Nodes].forEach((nodes, colIdx) => {
+            const yStep = 900 / (nodes.length + 1);
             nodes.forEach((nodeName, rowIdx) => {
                 nodePositions[nodeName] = { x: columnX[colIdx] + 75, y: (rowIdx + 1) * yStep };
             });
