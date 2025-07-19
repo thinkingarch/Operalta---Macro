@@ -224,11 +224,18 @@
     const REVERSE_CYCLE_STATES = ['Rise', 'Consolidation', 'Decline', 'Transition'];
 
     const LEAF_NODES = {
-        gdp_pc: 'GDP/Cap', gdp_growth: 'GDP Growth', manuf_va: 'Manuf. VA', debt: 'Gov. Debt',
-        gini: 'Inequality', unemployment: 'Unemployment', political_stability: 'P. Stability',
-        rd_exp: 'R&D Exp.', patents: 'Patents',
+        // Biosphere Integrity parents
         epi: 'EPI', nd_gain: 'ND-GAIN', co2: 'CO2', renewable: 'Renewable',
-        fertility: 'Fertility', age_dependency: 'Age Depend.', military_exp: 'Military Exp.'
+        // Economic Engine parents
+        gdp_pc: 'GDP/Cap', gdp_growth: 'GDP Growth', manuf_va: 'Manuf. VA', debt: 'Gov. Debt',
+        // Power Projection parent (moved under debt)
+        military_exp: 'Military Exp.',
+        // Social Cohesion parents
+        gini: 'Inequality', unemployment: 'Unemployment', political_stability: 'P. Stability',
+        // Tech Capacity parents
+        rd_exp: 'R&D Exp.', patents: 'Patents',
+        // Demographic Dynamism parents
+        fertility: 'Fertility', age_dependency: 'Age Depend.'
     };
 
     // 1. Discretization thresholds for raw indicators
@@ -818,7 +825,7 @@
 
         // Position nodes
         const leafNodes = Object.keys(LEAF_NODES);
-        const l1Nodes = ['economicEngine', 'socialCohesion', 'techCapacity', 'biosphereIntegrity', 'demographicDynamism'];
+        const l1Nodes = ['biosphereIntegrity', 'economicEngine', 'socialCohesion', 'techCapacity', 'demographicDynamism'];
         const l2Nodes = ['powerProjection', 'nationalResilience'];
         const l3Nodes = ['hegemonicPosition'];
 
