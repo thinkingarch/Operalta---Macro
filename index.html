@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operalta - Macro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712; /* bg-gray-950 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .loader {
+            border: 4px solid #4b5563; /* border-gray-600 */
+            border-top: 4px solid #3b82f6; /* border-blue-500 */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .sidebar-icon {
+            width: 24px;
+            height: 24px;
+        }
+        .view-content {
+            display: none;
+        }
+        .view-content.active {
+            display: block;
+        }
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- Sidebar -->
+    <nav class="w-72 bg-gray-900 p-6 space-y-4 border-r border-gray-800 flex-shrink-0 h-screen sticky top-0 overflow-y-auto">
+        <div class="flex items-center space-x-3 mb-8">
+            <svg class="h-8 w-8 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2ZM16.893 15.462C16.327 16.587 15.35 17.488 14.162 17.962L12.001 13.413L16.893 15.462ZM9.838 17.962C8.65 17.488 7.673 16.587 7.107 15.462L12.001 13.413L9.838 17.962ZM7.107 8.538C7.673 7.413 8.65 6.512 9.838 6.038L12.001 10.587L7.107 8.538ZM14.162 6.038C15.35 6.512 16.327 7.413 16.893 8.538L12.001 10.587L14.162 6.038Z" fill="currentColor"/></svg>
+            <h1 class="text-2xl font-bold text-white">Operalta - Macro</h1>
+        </div>
+        <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-lg bg-gray-800 text-white" data-view="dashboard">
+            <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z" /></svg>
+            <span class="font-medium">Dashboard</span>
+        </a>
+        <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800/50 text-gray-400" data-view="model">
+             <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12A2.25 2.25 0 0 0 20.25 14.25V5.25A2.25 2.25 0 0 0 18 3H6.75A2.25 2.25 0 0 0 4.5 5.25v.75m-1.5 0V5.25c0-1.518 1.232-2.75 2.75-2.75H18A2.25 2.25 0 0 1 20.25 5.25v9A2.25 2.25 0 0 1 18 16.5h-3.375m-12.75 0H3.75m9 0h3.375M3.75 21h16.5M12 3v18" /></svg>
+            <span class="font-medium">Dynamic Modeling</span>
+        </a>
+        <a href="#" class="nav-link flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800/50 text-gray-400" data-view="sources">
+            <svg class="sidebar-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
+            <span class="font-medium">Data Sources</span>
+        </a>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto h-screen">
+        
+        <!-- View: Dashboard -->
+        <div id="view-dashboard" class="view-content active">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-white">Dashboard</h1>
+                <p class="text-gray-400">Welcome to Operalta. Here's a quick overview of macro insights.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+                <!-- Stat Cards -->
+                <div class="bg-gray-900 p-6 rounded-lg border border-gray-800"><h4 class="text-gray-400 text-sm font-medium">Data Sources Active</h4><p class="text-3xl font-semibold text-white mt-2">4</p></div>
+                <div class="bg-gray-900 p-6 rounded-lg border border-gray-800"><h4 class="text-gray-400 text-sm font-medium">Models Active</h4><p class="text-3xl font-semibold text-white mt-2">1</p></div>
+                <!-- Action Cards -->
+                <div class="bg-blue-600/90 p-6 rounded-lg text-white col-span-1 md:col-span-2 lg:col-span-1"><h4 class="font-bold">Data Discovery</h4><p class="text-sm text-blue-100 mt-1 mb-3">Find and ingest new data sources.</p><select id="country-select" class="w-full mt-1 p-2 border border-blue-400 rounded-md bg-blue-500/50 text-white focus:ring-blue-500 focus:border-blue-500"></select></div>
+                <div class="bg-orange-500/90 p-6 rounded-lg text-white"><h4 class="font-bold">Synthesize Data</h4><p class="text-sm text-orange-100 mt-1 mb-3">Generate new data from existing sources.</p><button id="analyze-btn" class="w-full bg-white/20 text-white font-semibold py-2 px-4 rounded-md hover:bg-white/30 transition">Start Synthesizing &rarr;</button></div>
+                <div class="bg-pink-600/90 p-6 rounded-lg text-white"><h4 class="font-bold">Dynamic Modeling</h4><p class="text-sm text-pink-100 mt-1 mb-3">Translate models to live spreadsheets.</p><button id="explore-model-btn" class="w-full bg-white/20 text-white font-semibold py-2 px-4 rounded-md hover:bg-white/30 transition">Explore Models &rarr;</button></div>
+            </div>
+            
+            <div id="loader" class="loader hidden mx-auto my-16"></div>
+            
+            <div id="dashboard-content-wrapper" class="hidden">
+                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-gray-900 p-6 rounded-lg border border-gray-800">
+                        <h3 class="text-xl font-semibold text-white mb-4">Cycle Analysis & Trends</h3>
+                        <div class="mb-8">
+                            <h4 class="text-lg font-semibold mb-2 text-white">Hegemonic Cycle Position: <span id="hegemonic-position" class="ml-2 font-bold text-2xl text-blue-400"></span></h4>
+                            <div class="w-full bg-gray-700 rounded-full h-2.5 mt-4"><div id="hegemonic-progress" class="bg-blue-500 h-2.5 rounded-full" style="width: 0%"></div></div>
+                            <div class="flex justify-between text-xs text-gray-400 mt-1"><span>Rise</span><span>Consolidation</span><span>Decline</span><span>Transition</span></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-lg font-semibold text-white">Historical Trends</h4>
+                                <select id="trend-indicator-select" class="p-1 border border-gray-600 rounded-md bg-gray-700 text-white text-sm focus:ring-blue-500 focus:border-blue-500"></select>
+                            </div>
+                            <div class="chart-container"><canvas id="historical-chart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-900 p-6 rounded-lg border border-gray-800">
+                         <h3 class="text-xl font-semibold text-white mb-4">Core Diagnostics</h3>
+                         <div class="space-y-6">
+                            <div><span class="text-gray-400">National Resilience</span><p id="resilience-score" class="text-2xl font-bold"></p></div>
+                            <div><span class="text-gray-400">Power Projection</span><p id="power-score" class="text-2xl font-bold"></p></div>
+                            <div><span class="text-gray-400">Imperial Overstretch Risk</span><p id="overstretch-risk" class="text-2xl font-bold"></p></div>
+                            <div class="pt-4 border-t border-gray-800">
+                                <div class="flex justify-between items-center mb-4">
+                                     <div class="flex items-center space-x-2">
+                                        <h4 class="text-lg font-semibold text-white">Social Cohesion</h4>
+                                        <div class="relative group">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                            </svg>
+                                            <span class="invisible group-hover:visible absolute w-64 bg-gray-700 text-white text-xs rounded py-2 px-3 z-10 bottom-full left-1/2 -translate-x-1/2 mb-2">
+                                                Estimated as a weighted average of the Income Equality and Employment scores. You can adjust these weights in the Dynamic Modeling tab.
+                                            </span>
+                                        </div>
+                                    </div>
+                                     <p id="social-cohesion-score" class="text-2xl font-bold"></p>
+                                </div>
+                                <div id="social-cohesion-gauges" class="space-y-3"></div>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Model Explorer -->
+        <div id="view-model" class="view-content">
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4 text-white">Bayesian Model Explorer</h2>
+                <p class="text-gray-400 mb-6">Adjust the weights of individual indicators to see how they influence the overall analysis. Weights are automatically normalized for each component.</p>
+                <div id="model-explorer-content" class="space-y-6"></div>
+            </div>
+        </div>
+
+        <!-- View: Data Sources -->
+        <div id="view-sources" class="view-content">
+            <div class="bg-gray-900 border border-gray-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4 text-white">Data Source Management</h2>
+                <div id="data-sources-content" class="space-y-4"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script type="module">
+    // --- App State & Config ---
+    let historicalChart;
+    
+    const COUNTRIES = { 'USA': 'United States', 'CHN': 'China', 'DEU': 'Germany', 'JPN': 'Japan', 'IND': 'India', 'RUS': 'Russia', 'BRA': 'Brazil', 'GBR': 'United Kingdom', 'FRA': 'France', 'ITA': 'Italy', 'CAN': 'Canada', 'AUS': 'Australia', 'KOR': 'South Korea', 'MEX': 'Mexico', 'IDN': 'Indonesia', 'SAU': 'Saudi Arabia', 'TUR': 'Turkey', 'ARG': 'Argentina', 'ZAF': 'South Africa', 'NGA': 'Nigeria' };
+    
+    const INDICATORS = { 
+        WB_GDP_PC: 'NY.GDP.PCAP.CD', WB_GDP_GROWTH: 'NY.GDP.MKTP.KD.ZG', WB_MANUF_VA: 'NV.IND.MANF.ZS', 
+        WB_GINI: 'SI.POV.GINI', WB_UNEMPLOYMENT: 'SL.UEM.TOTL.ZS', WB_MILITARY_EXP: 'MS.MIL.XPND.GD.ZS', 
+        WB_RD_EXP: 'GB.XPD.RSDV.GD.ZS', WB_PATENTS: 'IP.PAT.RESD',
+        WB_POLITICAL_STABILITY: 'PV.PER.RNK', WB_RULE_OF_LAW: 'RL.PER.RNK', WB_CORRUPTION_CONTROL: 'CC.PER.RNK',
+        IMF_DEBT: 'GGXWDG_NGDP' 
+    };
+
+    const TREND_INDICATORS = { 'GDP Growth (%)': { source: 'WB', code: 'NY.GDP.MKTP.KD.ZG' }, 'Military Spending (% GDP)': { source: 'WB', code: 'MS.MIL.XPND.GD.ZS' }, 'Unemployment (%)': { source: 'WB', code: 'SL.UEM.TOTL.ZS' }, 'Government Debt (% GDP)': { source: 'IMF', code: 'GGXWDG_NGDP' }, 'Political Stability': {source: 'WB', code: 'PV.PER.RNK'}};
+    
+    const STATIC_DATA = {
+        EPI: { 'USA': 51.1, 'CHN': 28.4, 'DEU': 77.2, 'JPN': 75.1, 'IND': 18.9, 'RUS': 37.5, 'BRA': 43.6, 'GBR': 81.3, 'FRA': 80.0, 'ITA': 78.8, 'CAN': 71.8, 'AUS': 74.9, 'KOR': 62.1, 'MEX': 45.5, 'IDN': 28.2, 'SAU': 37.9, 'TUR': 46.8, 'ARG': 41.1, 'ZAF': 36.6, 'NGA': 28.3 },
+        ND_GAIN: { 'USA': 69.8, 'CHN': 60.3, 'DEU': 72.5, 'JPN': 71.2, 'IND': 48.9, 'RUS': 62.5, 'BRA': 56.9, 'GBR': 73.1, 'FRA': 73.8, 'ITA': 68.4, 'CAN': 71.6, 'AUS': 74.5, 'KOR': 69.1, 'MEX': 58.1, 'IDN': 51.3, 'SAU': 59.8, 'TUR': 59.5, 'ARG': 57.7, 'ZAF': 53.9, 'NGA': 35.6 }
+    };
+
+    let modelWeights = {
+        economicEngine: { gdp_pc_score: 35, gdp_growth_score: 30, manuf_va_score: 20, debt_score: 15 },
+        techCapacity: { rd_exp_score: 70, patents_score: 30 },
+        socialCohesion: { gini_score: 60, unemployment_score: 40 },
+        politicalStability: { stability_score: 50, rule_of_law_score: 30, corruption_control_score: 20 },
+        biosphereIntegrity: { epi_score: 50, nd_gain_score: 50 },
+        nationalResilience: { socialCohesion: 40, politicalStability: 40, biosphereIntegrity: 20 },
+        powerProjection: { economicEngine: 40, techCapacity: 40, military_exp_score: 20 }
+    };
+
+    let dataSources = {
+        worldBank: { name: 'World Bank', enabled: true, apiKey: '', type: 'public' },
+        imf: { name: 'International Monetary Fund', enabled: true, apiKey: '', type: 'public' },
+        epi: { name: 'Yale EPI (2022)', enabled: true, apiKey: '', type: 'static' },
+        ndGain: { name: 'ND-GAIN (2021)', enabled: true, apiKey: '', type: 'static' },
+        oecd: { name: 'OECD', enabled: false, apiKey: '', type: 'proprietary' },
+    };
+
+    let countrySelect, analyzeBtn, loader, dashboardContentWrapper, trendIndicatorSelect, exploreModelBtn;
+
+    function initialize() {
+        countrySelect = document.getElementById('country-select');
+        analyzeBtn = document.getElementById('analyze-btn');
+        exploreModelBtn = document.getElementById('explore-model-btn');
+        loader = document.getElementById('loader');
+        dashboardContentWrapper = document.getElementById('dashboard-content-wrapper');
+        trendIndicatorSelect = document.getElementById('trend-indicator-select');
+
+        populateSelect(countrySelect, COUNTRIES);
+        countrySelect.value = 'USA';
+        populateSelect(trendIndicatorSelect, TREND_INDICATORS, true);
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchView(e.currentTarget.dataset.view);
+            });
+        });
+
+        analyzeBtn.addEventListener('click', runAnalysis);
+        exploreModelBtn.addEventListener('click', () => switchView('model'));
+        trendIndicatorSelect.addEventListener('change', runAnalysis);
+        
+        buildModelExplorer();
+        buildDataSourcesManager();
+        runAnalysis();
+    }
+
+    function populateSelect(selectEl, options, useKeys = false) {
+        selectEl.innerHTML = '';
+        for (const key in options) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = useKeys ? key : options[key];
+            selectEl.appendChild(option);
+        }
+    }
+
+    function switchView(viewId) {
+        document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+        document.getElementById(`view-${viewId}`).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(l => {
+            l.classList.remove('bg-gray-800', 'text-white');
+            l.classList.add('hover:bg-gray-800/50', 'text-gray-400');
+        });
+        document.querySelector(`.nav-link[data-view="${viewId}"]`).classList.add('bg-gray-800', 'text-white');
+    }
+
+    async function fetchData(countryCode) {
+        const promises = [];
+        if (dataSources.worldBank.enabled) promises.push(fetchWorldBankData(countryCode)); else promises.push(Promise.resolve({}));
+        if (dataSources.imf.enabled) promises.push(fetchImfData(countryCode)); else promises.push(Promise.resolve({}));
+        const [wbData, imfData] = await Promise.all(promises);
+        const staticData = {
+            EPI: { value: STATIC_DATA.EPI[countryCode] || null },
+            ND_GAIN: { value: STATIC_DATA.ND_GAIN[countryCode] || null }
+        };
+        return { ...wbData, ...imfData, ...staticData };
+    }
+
+    async function fetchWorldBankData(countryCode, indicator = null, dateRange = '2013:2023') {
+        const indicatorsToFetch = indicator ? [indicator] : Object.values(INDICATORS).filter(id => !id.startsWith('GGX'));
+        const url = `https://api.worldbank.org/v2/country/${countryCode}/indicator/${indicatorsToFetch.join(';')}?date=${dateRange}&format=json&per_page=1000`;
+        try {
+            const res = await fetch(url);
+            if (!res.ok) { console.error(`WB API Error: ${res.status}`); return indicator ? [] : {}; }
+            const raw = await res.json();
+            if (!raw || !raw[1]) { console.warn(`No WB data for ${countryCode}`); return indicator ? [] : {}; }
+            if (indicator) return raw[1].map(d => ({ year: d.date, value: d.value })).filter(d => d.value !== null).sort((a, b) => a.year - b.year);
+            const data = {};
+            Object.keys(INDICATORS).filter(k => k.startsWith('WB_')).forEach(key => {
+                const recentData = raw[1].find(d => d.indicator.id === INDICATORS[key] && d.value !== null);
+                data[key] = recentData ? { value: recentData.value, date: recentData.date } : { value: null, date: 'N/A' };
+            });
+            return data;
+        } catch (error) { console.error(`Fetch Error (WB):`, error); return indicator ? [] : {}; }
+    }
+
+    async function fetchImfData(countryCode, indicator = null) {
+        const indicatorId = indicator || INDICATORS.IMF_DEBT;
+        const targetUrl = `https://www.imf.org/external/datamapper/api/v1/${indicatorId}/${countryCode}`;
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        try {
+            const res = await fetch(proxyUrl);
+            if (!res.ok) { console.error(`CORS Proxy Error (IMF): ${res.status}`); return indicator ? [] : {}; }
+            const raw = await res.json();
+            const values = raw.values?.[indicatorId]?.[countryCode];
+            if (!values) { console.warn(`No IMF data for ${indicatorId}/${countryCode}`); return indicator ? [] : {}; }
+            if (indicator) return Object.entries(values).map(([year, value]) => ({ year, value })).sort((a, b) => a.year - b.year);
+            const latestYear = Object.keys(values).filter(y => parseInt(y) <= new Date().getFullYear()).pop();
+            return { IMF_DEBT: { value: values[latestYear], date: latestYear } };
+        } catch (error) { console.error(`Fetch Error (IMF):`, error); return indicator ? [] : {}; }
+    }
+    
+    function processData(data) {
+        const normalize = (value, min, max, invert = false) => {
+            if (value === null || value === undefined) return null; // Return null if data is missing
+            const normalized = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+            return invert ? 100 - normalized : normalized;
+        };
+        return {
+            gdp_pc_score: normalize(data.WB_GDP_PC?.value, 1000, 80000),
+            gdp_growth_score: normalize(data.WB_GDP_GROWTH?.value, -2, 8),
+            manuf_va_score: normalize(data.WB_MANUF_VA?.value, 5, 30),
+            gini_score: normalize(data.WB_GINI?.value, 25, 65, true),
+            unemployment_score: normalize(data.WB_UNEMPLOYMENT?.value, 2, 15, true),
+            debt_score: normalize(data.IMF_DEBT?.value, 30, 150, true),
+            military_exp_score: normalize(data.WB_MILITARY_EXP?.value, 0.5, 5),
+            rd_exp_score: normalize(data.WB_RD_EXP?.value, 0.5, 4),
+            patents_score: normalize(data.WB_PATENTS?.value, 100, 1000000),
+            stability_score: normalize(data.WB_POLITICAL_STABILITY?.value, 0, 100),
+            rule_of_law_score: normalize(data.WB_RULE_OF_LAW?.value, 0, 100),
+            corruption_control_score: normalize(data.WB_CORRUPTION_CONTROL?.value, 0, 100),
+            epi_score: normalize(data.EPI?.value, 15, 85),
+            nd_gain_score: normalize(data.ND_GAIN?.value, 30, 75),
+            raw: data
+        };
+    }
+
+    function runBayesianModel(p_data) {
+        const getWeightedSum = (component, data) => {
+            const weights = modelWeights[component];
+            let totalWeight = 0, weightedSum = 0;
+            for (const key in weights) {
+                const score = data[key] === null ? 50 : data[key]; // Use neutral 50 if data is null
+                totalWeight += weights[key];
+                weightedSum += (score || 0) * weights[key];
+            }
+            return totalWeight > 0 ? weightedSum / totalWeight : 0;
+        }
+
+        const economicEngine = getWeightedSum('economicEngine', p_data);
+        const techCapacity = getWeightedSum('techCapacity', p_data);
+        const socialCohesion = getWeightedSum('socialCohesion', p_data);
+        const politicalStability = getWeightedSum('politicalStability', p_data);
+        const biosphereIntegrity = getWeightedSum('biosphereIntegrity', p_data);
+        const nationalResilience = getWeightedSum('nationalResilience', { socialCohesion, politicalStability, biosphereIntegrity });
+        const powerProjection = getWeightedSum('powerProjection', { economicEngine, techCapacity, military_exp_score: p_data.military_exp_score });
+        const overstretchRisk = Math.max(0, (p_data.military_exp_score === null ? 50 : p_data.military_exp_score) - (economicEngine * 0.4));
+
+        let position = 'Transition', progress = 95;
+        if (powerProjection > 70 && nationalResilience > 60) { position = 'Consolidation'; progress = 50; } 
+        else if ((p_data.gdp_growth_score || 50) > 60 && (p_data.manuf_va_score || 50) > 50 && nationalResilience > 50) { position = 'Rise'; progress = 15; } 
+        else if (powerProjection < 60 && overstretchRisk > 30 && nationalResilience < 50) { position = 'Decline'; progress = 75; }
+
+        return { hegemonicPosition: { label: position, progress }, nationalResilience, powerProjection, overstretchRisk, socialCohesion };
+    }
+
+    async function runAnalysis() {
+        if (!dashboardContentWrapper) return;
+        dashboardContentWrapper.classList.add('hidden');
+        loader.classList.remove('hidden');
+        
+        const countryCode = countrySelect.value;
+        const data = await fetchData(countryCode);
+        const processedData = processData(data);
+        const modelOutput = runBayesianModel(processedData);
+        updateDashboard(modelOutput, processedData);
+        
+        const trendIndicatorKey = trendIndicatorSelect.value;
+        const trendIndicator = TREND_INDICATORS[trendIndicatorKey];
+        const historicalData = trendIndicator.source === 'WB' 
+            ? await fetchWorldBankData(countryCode, trendIndicator.code, '2000:2023')
+            : await fetchImfData(countryCode, trendIndicator.code);
+        updateHistoricalChart(historicalData, trendIndicatorKey);
+
+        loader.classList.add('hidden');
+        dashboardContentWrapper.classList.remove('hidden');
+    }
+
+    function updateDashboard(output, p_data) {
+        document.getElementById('hegemonic-position').textContent = output.hegemonicPosition.label;
+        document.getElementById('hegemonic-progress').style.width = `${output.hegemonicPosition.progress}%`;
+        
+        const updateScore = (elId, score) => {
+            const el = document.getElementById(elId);
+            el.textContent = `${score.toFixed(1)} / 100`;
+            el.className = `text-2xl font-bold ${score > 70 ? 'text-green-400' : score > 40 ? 'text-yellow-400' : 'text-red-400'}`;
+        };
+        updateScore('resilience-score', output.nationalResilience);
+        updateScore('power-score', output.powerProjection);
+        updateScore('overstretch-risk', output.overstretchRisk);
+
+        updateSocialCohesionGauges(p_data, output.socialCohesion);
+    }
+
+    function updateHistoricalChart(data, label) {
+        const ctx = document.getElementById('historical-chart').getContext('2d');
+        if (historicalChart) historicalChart.destroy();
+        historicalChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.map(d => d.year),
+                datasets: [{ label: label, data: data.map(d => d.value), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 }]
+            },
+            options: chartOptions(true)
+        });
+    }
+
+    function updateSocialCohesionGauges(p_data, totalScore) {
+        const container = document.getElementById('social-cohesion-gauges');
+        container.innerHTML = '';
+        const scoreEl = document.getElementById('social-cohesion-score');
+        scoreEl.textContent = `${totalScore.toFixed(1)} / 100`;
+        scoreEl.className = `text-2xl font-bold ${totalScore > 70 ? 'text-green-400' : totalScore > 40 ? 'text-yellow-400' : 'text-red-400'}`;
+
+        const gauges = { 
+            'Income Equality': { score: p_data.gini_score }, 
+            'Employment': { score: p_data.unemployment_score }
+        };
+        for (const label in gauges) {
+            const score = gauges[label].score;
+            if (score === null) {
+                container.innerHTML += `
+                    <div>
+                        <div class="flex justify-between mb-1"><span class="text-sm text-gray-400">${label}</span><span class="text-sm font-medium text-gray-500">Data N/A</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="bg-gray-600 h-2 rounded-full" style="width: 100%"></div></div>
+                    </div>
+                `;
+            } else {
+                const color = score > 70 ? 'bg-green-500' : score > 40 ? 'bg-yellow-500' : 'bg-red-500';
+                container.innerHTML += `
+                    <div>
+                        <div class="flex justify-between mb-1"><span class="text-sm text-gray-400">${label}</span><span class="text-sm font-medium text-gray-300">${score.toFixed(1)}%</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="${color} h-2 rounded-full" style="width: ${score}%"></div></div>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    function chartOptions(isTimeSeries = false) {
+        const options = {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#d1d5db' } } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db' } },
+                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#d1d5db' } }
+            }
+        };
+        if (isTimeSeries) { options.scales.x.type = 'time'; options.scales.x.time = { unit: 'year' }; }
+        return options;
+    }
+
+    function buildModelExplorer() {
+        const container = document.getElementById('model-explorer-content');
+        container.innerHTML = '';
+        const friendlyNames = { gdp_pc_score: 'GDP per Capita', gdp_growth_score: 'GDP Growth', manuf_va_score: 'Manufacturing VA', debt_score: 'Low Debt', gini_score: 'Income Equality', unemployment_score: 'Employment', rd_exp_score: 'R&D Spending', patents_score: 'Patents', stability_score: 'Political Stability', rule_of_law_score: 'Rule of Law', corruption_control_score: 'Control of Corruption', epi_score: 'EPI (Biodiversity)', nd_gain_score: 'ND-GAIN (Climate Risk)', socialCohesion: 'Social Cohesion', politicalStability: 'Political Stability', biosphereIntegrity: 'Biosphere Integrity', economicEngine: 'Economic Engine', techCapacity: 'Tech Capacity', military_exp_score: 'Military Spend' };
+
+        for (const component in modelWeights) {
+            let componentHtml = `<div class="p-4 border border-gray-800 rounded-lg bg-gray-900/50"><h4 class="text-lg font-semibold text-blue-400 mb-3">${component.replace(/([A-Z])/g, ' $1').trim()}</h4><div class="space-y-4">`;
+            for (const weightKey in modelWeights[component]) {
+                const weightValue = modelWeights[component][weightKey];
+                componentHtml += `
+                    <div>
+                        <label for="${component}-${weightKey}" class="flex justify-between text-sm text-gray-300"><span>${friendlyNames[weightKey] || weightKey}</span><span id="${component}-${weightKey}-val">${weightValue}%</span></label>
+                        <input type="range" id="${component}-${weightKey}" data-component="${component}" data-weightkey="${weightKey}" min="0" max="100" value="${weightValue}" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                `;
+            }
+            componentHtml += `</div></div>`;
+            container.innerHTML += componentHtml;
+        }
+
+        document.querySelectorAll('#model-explorer-content input[type="range"]').forEach(slider => {
+            slider.addEventListener('input', (e) => {
+                const { component, weightkey } = e.target.dataset;
+                modelWeights[component][weightkey] = parseInt(e.target.value);
+                document.getElementById(`${component}-${weightkey}-val`).textContent = `${e.target.value}%`;
+                runAnalysis();
+            });
+        });
+    }
+
+    function buildDataSourcesManager() {
+        const container = document.getElementById('data-sources-content');
+        container.innerHTML = '';
+        for (const key in dataSources) {
+            const source = dataSources[key];
+            container.innerHTML += `
+                <div class="p-4 bg-gray-900/50 rounded-lg border border-gray-800 flex items-center justify-between">
+                    <div>
+                        <h4 class="font-semibold text-white">${source.name} <span class="text-xs uppercase font-bold ${source.type === 'public' || source.type === 'static' ? 'text-green-400' : 'text-yellow-400'}">${source.type}</span></h4>
+                        <div class="mt-2 ${source.type !== 'proprietary' ? 'hidden' : ''}">
+                            <input type="text" placeholder="Enter API Key" class="p-1 text-sm bg-gray-700 border border-gray-600 rounded-md w-64" value="${source.apiKey}">
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm mr-2 ${source.enabled ? 'text-gray-300' : 'text-gray-500'}">${source.enabled ? 'Enabled' : 'Disabled'}</span>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" value="" class="sr-only peer" ${source.enabled ? 'checked' : ''} data-sourcekey="${key}">
+                            <div class="relative w-11 h-6 bg-gray-700 rounded-full peer peer-focus:ring-4 peer-focus:ring-blue-800 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.querySelectorAll('#data-sources-content input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const { sourcekey } = e.target.dataset;
+                dataSources[sourcekey].enabled = e.target.checked;
+                runAnalysis();
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
