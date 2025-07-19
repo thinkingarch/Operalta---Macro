@@ -252,13 +252,13 @@
     const NETWORK_STRUCTURE = {
         // Layer 1
         biosphereIntegrity: ['epi', 'nd_gain', 'co2', 'renewable'],
-        demographicDynamism: ['fertility', 'age_dependency'],
+        demographicDynamism: ['fertility', 'age_dependency', 'biosphereIntegrity'],
         // Layer 2
-        economicEngineType: ['gdp_pc', 'current_account', 'manuf_vs_finance'],
-        technologicalCapacity: ['rd_exp', 'patents', 'internet_users'],
-        socialCohesion: ['gini', 'corruption_control', 'rule_of_law', 'political_stability'],
+        economicEngineType: ['gdp_pc', 'current_account', 'manuf_vs_finance', 'demographicDynamism'],
+        technologicalCapacity: ['rd_exp', 'patents', 'internet_users', 'economicEngineType'],
+        socialCohesion: ['gini', 'corruption_control', 'rule_of_law', 'political_stability', 'economicEngineType'],
         // Layer 3
-        nationalResilience: ['socialCohesion', 'biosphereIntegrity', 'demographicDynamism'],
+        nationalResilience: ['socialCohesion', 'biosphereIntegrity', 'demographicDynamism', 'economicEngineType'],
         relativePowerProjection: ['economicEngineType', 'technologicalCapacity', 'military_exp'],
         hegemonicCyclePosition: ['nationalResilience', 'relativePowerProjection']
     };
@@ -270,23 +270,23 @@
             table: [ { Weak: 0.6, Moderate: 0.3, Strong: 0.1 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.1, Moderate: 0.3, Strong: 0.6 } ]
         },
         demographicDynamism: {
-            weights: { fertility: 0.5, age_dependency: 0.5 },
+            weights: { fertility: 0.4, age_dependency: 0.4, biosphereIntegrity: 0.2 },
             table: [ { Weak: 0.6, Moderate: 0.3, Strong: 0.1 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.1, Moderate: 0.3, Strong: 0.6 } ]
         },
         economicEngineType: {
-            weights: { gdp_pc: 0.4, current_account: 0.3, manuf_vs_finance: 0.3 },
+            weights: { gdp_pc: 0.3, current_account: 0.25, manuf_vs_finance: 0.2, demographicDynamism: 0.25 },
             table: [ { Weak: 0.8, Moderate: 0.15, Strong: 0.05 }, { Weak: 0.2, Moderate: 0.6, Strong: 0.2 }, { Weak: 0.05, Moderate: 0.25, Strong: 0.7 } ]
         },
         technologicalCapacity: {
-            weights: { rd_exp: 0.5, patents: 0.3, internet_users: 0.2 },
+            weights: { economicEngineType: 0.2, rd_exp: 0.4, patents: 0.25, internet_users: 0.15 },
             table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.1, Moderate: 0.6, Strong: 0.3 }, { Weak: 0.0, Moderate: 0.2, Strong: 0.8 } ]
         },
         socialCohesion: {
-            weights: { gini: 0.4, corruption_control: 0.2, rule_of_law: 0.2, political_stability: 0.2 },
+            weights: { economicEngineType: 0.2, gini: 0.3, corruption_control: 0.2, rule_of_law: 0.15, political_stability: 0.15 },
             table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
         },
         nationalResilience: {
-            weights: { socialCohesion: 0.6, biosphereIntegrity: 0.2, demographicDynamism: 0.2 },
+            weights: { socialCohesion: 0.4, economicEngineType: 0.3, biosphereIntegrity: 0.15, demographicDynamism: 0.15 },
             table: [ { Weak: 0.7, Moderate: 0.25, Strong: 0.05 }, { Weak: 0.15, Moderate: 0.7, Strong: 0.15 }, { Weak: 0.05, Moderate: 0.2, Strong: 0.75 } ]
         },
         relativePowerProjection: {
