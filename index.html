@@ -67,6 +67,13 @@
         }
         .prob-bar-container { background-color: #374151; border-radius: 4px; overflow: hidden; display: flex; height: 1.25rem; }
         .prob-bar { display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: white; text-shadow: 1px 1px 2px black; }
+        .trend-button {
+            background-color: #374151; /* bg-gray-700 */
+            transition: background-color 0.2s;
+        }
+        .trend-button.active {
+            background-color: #2563eb; /* bg-blue-600 */
+        }
     </style>
 </head>
 <body class="flex">
@@ -117,7 +124,8 @@
                 <div class="bg-blue-600/90 p-6 rounded-lg text-white flex flex-col">
                     <h4 class="font-bold">Data Discovery</h4>
                     <p class="text-sm text-blue-100 mt-1 mb-3">Select Country →</p>
-                    <select id="country-select" class="w-full mt-auto p-2 border-none rounded-md bg-blue-900/70 text-white"></select>
+                    <input type="text" id="country-input" list="country-list" class="w-full mt-auto p-2 border-none rounded-md bg-blue-900/70 text-white" placeholder="Type a country name...">
+                    <datalist id="country-list"></datalist>
                 </div>
 
                 <!-- Synthesize Data Card -->
@@ -147,9 +155,9 @@
                         </div>
                         <div id="cycle-explanation-scenarios" class="mt-6 text-sm text-gray-400 space-y-4"></div>
                         <div>
-                            <div class="flex justify-between items-center my-4 pt-6 border-t border-gray-800">
-                                <h4 class="text-lg font-semibold text-white">Historical Trends</h4>
-                                <select id="trend-indicator-select" class="p-1 border-none rounded-md bg-gray-700 text-white text-sm"></select>
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center my-4 pt-6 border-t border-gray-800">
+                                <h4 class="text-lg font-semibold text-white mb-3 md:mb-0">Historical Trends</h4>
+                                <div id="trend-indicator-buttons" class="flex flex-wrap gap-2"></div>
                             </div>
                             <div class="chart-container"><canvas id="historical-chart"></canvas></div>
                         </div>
@@ -205,7 +213,9 @@
         ndGain: { name: 'ND-GAIN (2021)', enabled: true, apiKey: '', type: 'static' },
     };
     const OECD_COUNTRIES = ['AUS', 'CAN', 'DEU', 'FRA', 'GBR', 'ITA', 'JPN', 'KOR', 'MEX', 'TUR', 'USA'];
-    let countrySelect, analyzeBtn, loader, dashboardContentWrapper, trendIndicatorSelect, exploreModelBtn;
+    let countryInput, analyzeBtn, loader, dashboardContentWrapper, exploreModelBtn;
+    let currentCountryCode = 'USA';
+    let currentTrendIndicator = 'GDP Growth (%)';
 
     // --- Bayesian Network Definition ---
     const STATES = { Weak: 0, Moderate: 1, Strong: 2 };
@@ -295,16 +305,16 @@
     };
 
     function initialize() {
-        countrySelect = document.getElementById('country-select');
+        countryInput = document.getElementById('country-input');
         analyzeBtn = document.getElementById('analyze-btn');
         exploreModelBtn = document.getElementById('explore-model-btn');
         loader = document.getElementById('loader');
         dashboardContentWrapper = document.getElementById('dashboard-content-wrapper');
-        trendIndicatorSelect = document.getElementById('trend-indicator-select');
+        
+        populateCountryDatalist();
+        countryInput.value = COUNTRIES[currentCountryCode];
 
-        populateSelect(countrySelect, COUNTRIES);
-        countrySelect.value = 'USA';
-        populateSelect(trendIndicatorSelect, TREND_INDICATORS, true);
+        createTrendIndicatorButtons();
 
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -315,22 +325,57 @@
 
         analyzeBtn.addEventListener('click', runAnalysis);
         exploreModelBtn.addEventListener('click', () => switchView('model'));
-        countrySelect.addEventListener('change', runAnalysis);
-        trendIndicatorSelect.addEventListener('change', runAnalysis);
+        countryInput.addEventListener('change', handleCountryInputChange);
         
         buildModelExplorer();
         buildDataSourcesManager();
         runAnalysis();
     }
 
-    function populateSelect(selectEl, options, useKeys = false) {
-        selectEl.innerHTML = '';
-        for (const key in options) {
+    function populateCountryDatalist() {
+        const datalist = document.getElementById('country-list');
+        for (const code in COUNTRIES) {
             const option = document.createElement('option');
-            option.value = key;
-            option.textContent = useKeys ? key : options[key];
-            selectEl.appendChild(option);
+            option.value = COUNTRIES[code];
+            datalist.appendChild(option);
         }
+    }
+
+    function createTrendIndicatorButtons() {
+        const container = document.getElementById('trend-indicator-buttons');
+        container.innerHTML = '';
+        for (const key in TREND_INDICATORS) {
+            const button = document.createElement('button');
+            button.className = `trend-button text-xs font-semibold py-1 px-3 rounded-md`;
+            if (key === currentTrendIndicator) {
+                button.classList.add('active');
+            }
+            button.textContent = key;
+            button.dataset.indicatorKey = key;
+            button.addEventListener('click', handleTrendButtonClick);
+            container.appendChild(button);
+        }
+    }
+
+    function handleCountryInputChange() {
+        const inputValue = countryInput.value;
+        const countryCode = Object.keys(COUNTRIES).find(code => COUNTRIES[code] === inputValue);
+        if (countryCode) {
+            currentCountryCode = countryCode;
+            runAnalysis();
+        } else {
+            // Optional: handle invalid country name
+            console.warn("Invalid country name entered");
+        }
+    }
+
+    function handleTrendButtonClick(e) {
+        currentTrendIndicator = e.target.dataset.indicatorKey;
+        // Update active state on buttons
+        document.querySelectorAll('.trend-button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.indicatorKey === currentTrendIndicator);
+        });
+        runAnalysis();
     }
 
     function switchView(viewId) {
@@ -501,18 +546,16 @@
         loader.classList.remove('hidden');
         
         try {
-            const countryCode = countrySelect.value;
-            const rawData = await fetchData(countryCode);
+            const rawData = await fetchData(currentCountryCode);
             const modelOutput = runBayesianInference(rawData);
             
             updateDashboard(modelOutput);
             
-            const trendIndicatorKey = trendIndicatorSelect.value;
-            const trendIndicator = TREND_INDICATORS[trendIndicatorKey];
+            const trendIndicator = TREND_INDICATORS[currentTrendIndicator];
             const historicalData = trendIndicator.source === 'WB' 
-                ? await fetchWorldBankData(countryCode, trendIndicator.code, '2000:2023', true)
-                : await fetchImfData(countryCode, trendIndicator.code, true);
-            updateHistoricalChart(historicalData, trendIndicatorKey);
+                ? await fetchWorldBankData(currentCountryCode, trendIndicator.code, '2000:2023', true)
+                : await fetchImfData(currentCountryCode, trendIndicator.code, true);
+            updateHistoricalChart(historicalData, currentTrendIndicator);
         } catch (error) {
             console.error("An error occurred during analysis:", error);
             // Optionally, display an error message to the user in the UI
@@ -530,7 +573,7 @@
     }
 
     function createProbBar(distribution) {
-        const colors = { Weak: 'bg-red-500', Moderate: 'bg-yellow-500', Strong: 'bg-green-500', Rise: 'bg-blue-500', Consolidation: 'bg-green-500', Decline: 'bg-orange-500', Transition: 'bg-purple-500' };
+        const colors = { Weak: 'bg-pink-600', Moderate: 'bg-orange-500', Strong: 'bg-blue-600', Rise: 'bg-blue-600', Consolidation: 'bg-blue-600', Decline: 'bg-pink-600', Transition: 'bg-orange-500' };
         let html = '<div class="prob-bar-container">';
         for(const state in distribution) {
             const prob = distribution[state] * 100;
